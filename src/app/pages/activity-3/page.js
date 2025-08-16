@@ -97,7 +97,7 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
     concerns: [
       {
         _id: 'hardcoded-actual-concern', // Key for mapping
-        text: "The study was retracted because the neuroserpin was sterilized with a syringe filter while the neurobasal medium was assumed to be pre-sterilized, ultimately invalidating the results.",
+        text: "The study was retracted because the neuroserpin was sterilized with a syringe filter while the neurobasal medium was pre-sterilized. Unfortunately the syringe filter leached a contaminant that invalidated the results.",
         commentType: "",
         nodeLabels: ["Entire Study"]
       }
@@ -1016,7 +1016,7 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
               
               {!selectedTheme.isSpecialActualConcern && (
                 <div className="modal-comment-section">
-                  <h3>Why is this a concern?...</h3>
+                  <h3>If prompted, share your reasoning</h3>
                   
                   <div className="comments-list-container">
                     {commentsLoading ? (
