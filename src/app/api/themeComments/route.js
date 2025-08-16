@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import connectMongoDB from '../libs/mongodb';
-import ThemeComment from '@/app/api/models/themeComment';
+import ThemeComment from '../models/themeComment';
 
 // Function to get all theme comments by flowId, sessionId, and themeName
 export async function GET(request) {

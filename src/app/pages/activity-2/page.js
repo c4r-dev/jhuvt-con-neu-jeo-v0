@@ -101,6 +101,26 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
     });
   };
   
+  // Load concerns from database (memoized)
+  const loadConcernsForFlow = useCallback(async (flowId) => {
+    setConcernsLoading(true);
+    try {
+      const result = await getCommentsForFlow(flowId);
+      if (result.success) {
+        setConcerns(result.data);
+      } else {
+        setConcerns([]);
+        setErrorMessage('Failed to load concerns. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error loading concerns:', error);
+      setConcerns([]);
+      setErrorMessage('Failed to load concerns. Please try again.');
+    } finally {
+      setConcernsLoading(false);
+    }
+  }, []);
+
   // Memoized loadFlowData
   const loadFlowData = useCallback((flowId, flows) => {
     const selectedFlowData = flows.find(flow => flow.id === flowId);
@@ -115,7 +135,7 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
       // In debug mode, load concerns manually; in non-debug mode, let auto-generation handle it
       if (debugMode && !autoGenerating && !processingConcerns && !themedConcerns) {
         console.log("loadFlowData: Loading concerns for manually selected flow in debug mode", flowId);
-        loadConcernsForFlow(flowId); // Defined below
+        loadConcernsForFlow(flowId); // Defined above
       } else if (debugMode) {
         console.log("loadFlowData: Skipping concern loading in debug mode - already processing or have themed data");
       } else {
@@ -132,7 +152,7 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
           router.replace('/pages/activity-2', { shallow: true }); // Corrected path
       }
     }
-  }, [router, initialFlowId, autoGenerating, processingConcerns, themedConcerns, debugMode]); // Added debugMode to dependencies
+  }, [router, initialFlowId, autoGenerating, processingConcerns, themedConcerns, debugMode, loadConcernsForFlow]); // Added loadConcernsForFlow to dependencies
 
   // Load flows from database on component mount
   useEffect(() => {
@@ -186,6 +206,120 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
     const debug = params.get('debug');
     setDebugMode(debug === 'true');
   }, []);
+
+  // Function to load and process a flow
+  const loadFlowAndProcess = useCallback(async (flowId) => {
+    if (!sessionId) {
+      console.log('No sessionId available, skipping processing');
+      setErrorMessage('Session ID is required');
+      setAutoGenerating(false);
+      setAutoGenerationAttempted(true);
+      return;
+    }
+
+    try {
+      setConcernsLoading(true);
+      console.log("Activity-2: loadFlowAndProcess: Starting for flowId:", flowId, "sessionId:", sessionId);
+      
+      // Fetch concerns
+      const result = await getCommentsForFlow(flowId, sessionId);
+      
+      if (!result.success) {
+        console.warn("Activity-2: loadFlowAndProcess: Failed to load comments for flowId:", flowId, "Error:", result.error);
+        setErrorMessage('Failed to load concerns');
+        setAutoGenerating(false);
+        setAutoGenerationAttempted(true); // Ensure we don't retry auto-generation
+        setConcernsLoading(false);
+        return;
+      }
+      
+      // Set the concerns
+      const concernsData = result.data;
+      setConcerns(concernsData);
+      console.log("Activity-2: loadFlowAndProcess: Loaded", concernsData.length, "concerns for flowId:", flowId);
+      
+      if (concernsData.length === 0) {
+        console.log("Activity-2: loadFlowAndProcess: No concerns found for flowId:", flowId, ". Word cloud generation will be skipped for this flow.");
+        setErrorMessage('No concerns found for this flow');
+        // setThemedConcerns(null); // Explicitly ensure it's null if no concerns
+        setAutoGenerating(false);
+        setAutoGenerationAttempted(true); // Ensure we don't retry auto-generation
+        setConcernsLoading(false);
+        return;
+      }
+      
+      // Process with OpenAI
+      setProcessingConcerns(true);
+      console.log("Activity-2: loadFlowAndProcess: Processing", concernsData.length, "concerns with OpenAI for flowId:", flowId);
+      
+      try {
+        // Prepare data
+        const optimizedConcerns = concernsData.map(concern => ({
+          id: concern._id,
+          text: concern.text,
+          node: concern.node,
+          concernType: concern.concernType,
+          timestamp: concern.timestamp
+        }));
+
+        const response = await fetch('/api/process-concerns', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            concerns: optimizedConcerns,
+            sessionId: sessionId
+          }),
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("Activity-2: loadFlowAndProcess: OpenAI API error. Status:", response.status, "Response:", errorText);
+          setErrorMessage(`Failed to process concerns: ${response.status} ${errorText}`);
+          setThemedConcerns(null);
+          setAutoGenerating(false);
+          setAutoGenerationAttempted(true);
+          setProcessingConcerns(false);
+        } else {
+          const data = await response.json();
+          console.log("Activity-2: loadFlowAndProcess: Received data from OpenAI:", data);
+          
+          if (data && data.themes && Array.isArray(data.themes) && data.themes.length > 0) {
+            console.log("Activity-2: loadFlowAndProcess: OpenAI data has themes. Theme count:", data.themes.length);
+            setThemedConcerns(data);
+            setErrorMessage(''); // Clear any previous errors
+            setAutoGenerating(false);
+            setAutoGenerationAttempted(true);
+            setProcessingConcerns(false);
+          } else {
+            console.warn("Activity-2: loadFlowAndProcess: OpenAI data is missing themes or themes array is empty");
+            setErrorMessage('Received invalid data from processing service');
+            setThemedConcerns(null);
+            setAutoGenerating(false);
+            setAutoGenerationAttempted(true);
+            setProcessingConcerns(false);
+          }
+        }
+      } catch (processingError) {
+        console.error("Activity-2: loadFlowAndProcess: Error during OpenAI processing:", processingError);
+        setErrorMessage('Error processing concerns with AI service');
+        setThemedConcerns(null);
+        setAutoGenerating(false);
+        setAutoGenerationAttempted(true);
+        setProcessingConcerns(false);
+      }
+    } catch (error) {
+      console.error("Activity-2: loadFlowAndProcess: Outer error:", error);
+      setErrorMessage('Error processing concerns');
+      setThemedConcerns(null);
+      setAutoGenerating(false);
+      setAutoGenerationAttempted(true);
+    } finally {
+      setConcernsLoading(false);
+      console.log("Activity-2: loadFlowAndProcess: Fully finished for flowId:", flowId, "Current themedConcerns set (next render will show it):", themedConcerns );
+    }
+  }, [sessionId, themedConcerns]);
 
   // Auto-generate word cloud when in non-debug mode
   useEffect(() => {
@@ -255,144 +389,10 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
         selectedFlow
       });
     }
-  }, [debugMode, savedFlows, themedConcerns, processingConcerns, autoGenerating, autoGenerationAttempted, initialFlowId, selectedFlow]); // Added selectedFlow to dependencies
-
-  // Function to load and process a flow
-  const loadFlowAndProcess = async (flowId) => {
-    if (!sessionId) {
-      console.log('No sessionId available, skipping processing');
-      setErrorMessage('Session ID is required');
-      setAutoGenerating(false);
-      setAutoGenerationAttempted(true);
-      return;
-    }
-
-    try {
-      setConcernsLoading(true);
-      console.log("Activity-2: loadFlowAndProcess: Starting for flowId:", flowId, "sessionId:", sessionId);
-      
-      // Fetch concerns
-      const result = await getCommentsForFlow(flowId, sessionId);
-      
-      if (!result.success) {
-        console.warn("Activity-2: loadFlowAndProcess: Failed to load comments for flowId:", flowId, "Error:", result.error);
-        setErrorMessage('Failed to load concerns');
-        setAutoGenerating(false);
-        setAutoGenerationAttempted(true); // Ensure we don't retry auto-generation
-        setConcernsLoading(false);
-        return;
-      }
-      
-      // Set the concerns
-      const concernsData = result.data;
-      setConcerns(concernsData);
-      console.log("Activity-2: loadFlowAndProcess: Loaded", concernsData.length, "concerns for flowId:", flowId);
-      
-      if (concernsData.length === 0) {
-        console.log("Activity-2: loadFlowAndProcess: No concerns found for flowId:", flowId, ". Word cloud generation will be skipped for this flow.");
-        setErrorMessage('No concerns found for this flow');
-        // setThemedConcerns(null); // Explicitly ensure it's null if no concerns
-        setAutoGenerating(false);
-        setAutoGenerationAttempted(true); // Ensure we don't retry auto-generation
-        setConcernsLoading(false);
-        return;
-      }
-      
-      // Process with OpenAI
-      setProcessingConcerns(true);
-      console.log("Activity-2: loadFlowAndProcess: Processing", concernsData.length, "concerns with OpenAI for flowId:", flowId);
-      
-      try {
-        // Prepare data
-        const optimizedConcerns = concernsData.map(concern => ({
-          id: concern._id,
-          text: concern.text,
-          commentType: concern.commentType,
-          nodeLabels: concern.nodeLabels
-        }));
-        
-        // Make API request
-        const response = await fetch('/api/openAI', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ 
-            comments: optimizedConcerns,
-            flowId: flowId 
-          }),
-        });
-        
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error("Activity-2: loadFlowAndProcess: OpenAI API error. Status:", response.status, "Response:", errorText);
-          throw new Error(`API error: ${response.status} - ${errorText}`);
-        }
-        
-        // Process response
-        const data = await response.json();
-        console.log("Activity-2: loadFlowAndProcess: Received raw data from OpenAI:", JSON.stringify(data));
-        
-        if (data && data.themes) {
-            console.log("Activity-2: loadFlowAndProcess: OpenAI data has themes. Theme count:", data.themes.length, ". Calling setThemedConcerns.");
-            setThemedConcerns(data);
-            
-            // SAVE TO SESSION STORAGE - only save valid themed data
-            try {
-              sessionStorage.setItem(`themedConcerns-${flowId}`, JSON.stringify(data));
-              console.log(`Activity-2: Saved themedConcerns for flowId ${flowId} to sessionStorage`);
-            } catch (e) {
-              console.error("Activity-2: Error saving to sessionStorage:", e);
-            }
-        } else {
-            console.warn("Activity-2: loadFlowAndProcess: OpenAI data is missing themes, is null/undefined, or themes array is empty. Data:", JSON.stringify(data));
-            setThemedConcerns(null); // Explicitly set to null if data is not as expected
-            setErrorMessage('AI processing returned no themes. Ensure comments are sufficient for theming.');
-        }
-        
-        setCurrentFlowId(flowId); // Set the current flow ID for continue button
-      } catch (error) {
-        console.error("Activity-2: loadFlowAndProcess: Error during OpenAI processing for flowId:", flowId, error);
-        setErrorMessage('Error processing concerns: ' + error.message);
-        setThemedConcerns(null); // Ensure themedConcerns is null on error
-        setAutoGenerationAttempted(true); // Ensure we don't retry auto-generation on errors
-      } finally {
-        setProcessingConcerns(false);
-        setAutoGenerating(false);
-        // autoGenerationAttempted is set if an error occurred or successfully completed. If it was successful, it's set again here, which is fine.
-        setAutoGenerationAttempted(true);
-        console.log("Activity-2: loadFlowAndProcess: Finished OpenAI processing part for flowId:", flowId);
-      }
-    } catch (error) {
-      console.error("Activity-2: loadFlowAndProcess: Outer error for flowId:", flowId, error);
-      setErrorMessage('Error: ' + error.message);
-      setThemedConcerns(null); // Ensure themedConcerns is null on outer error
-      setAutoGenerating(false);
-      setAutoGenerationAttempted(true); // Ensure we don't retry auto-generation on errors
-    } finally {
-      setConcernsLoading(false);
-      console.log("Activity-2: loadFlowAndProcess: Fully finished for flowId:", flowId, "Current themedConcerns set (next render will show it):", themedConcerns );
-    }
-  };
-
-  // Generate word cloud when themed concerns are available
-  useEffect(() => {
-    console.log("Activity-2: Word cloud generation useEffect. themedConcerns:", themedConcerns, "cloudRef.current:", cloudRef.current, "Debug Mode:", debugMode);
-    if (themedConcerns && themedConcerns.themes && themedConcerns.themes.length > 0 && cloudRef.current) {
-      console.log("Activity-2: Conditions met, calling generateWordCloud. ClientWidth:", cloudRef.current.clientWidth, "ClientHeight:", cloudRef.current.clientHeight);
-      generateWordCloud();
-    } else {
-      console.log("Activity-2: Conditions NOT met for word cloud generation. Reasons:", {
-        hasThemedConcerns: !!themedConcerns,
-        hasThemes: !!(themedConcerns && themedConcerns.themes),
-        themesLength: themedConcerns && themedConcerns.themes ? themedConcerns.themes.length : undefined,
-        hasCloudRef: !!cloudRef.current
-      });
-    }
-  }, [themedConcerns, debugMode]); // Added debugMode to dependency array
+  }, [debugMode, savedFlows, themedConcerns, processingConcerns, autoGenerating, autoGenerationAttempted, initialFlowId, selectedFlow, loadFlowAndProcess]); // Added loadFlowAndProcess to dependencies
 
   // Generate word cloud visualization
-  const generateWordCloud = () => {
+  const generateWordCloud = useCallback(() => {
     if (!themedConcerns || !themedConcerns.themes) return;
     
     // Clear previous word cloud
@@ -564,7 +564,23 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
     setTimeout(() => {
       simulation.stop();
     }, 3000);
-  };
+  }, [themedConcerns, debugMode]);
+
+  // Generate word cloud when themed concerns are available
+  useEffect(() => {
+    console.log("Activity-2: Word cloud generation useEffect. themedConcerns:", themedConcerns, "cloudRef.current:", cloudRef.current, "Debug Mode:", debugMode);
+    if (themedConcerns && themedConcerns.themes && themedConcerns.themes.length > 0 && cloudRef.current) {
+      console.log("Activity-2: Conditions met, calling generateWordCloud. ClientWidth:", cloudRef.current.clientWidth, "ClientHeight:", cloudRef.current.clientHeight);
+      generateWordCloud();
+    } else {
+      console.log("Activity-2: Conditions NOT met for word cloud generation. Reasons:", {
+        hasThemedConcerns: !!themedConcerns,
+        hasThemes: !!(themedConcerns && themedConcerns.themes),
+        themesLength: themedConcerns && themedConcerns.themes ? themedConcerns.themes.length : undefined,
+        hasCloudRef: !!cloudRef.current
+      });
+    }
+  }, [themedConcerns, debugMode, generateWordCloud]); // Added generateWordCloud to dependency array
 
   // Handle flow selection from dropdown
   const handleFlowSelection = async (e) => {
@@ -602,35 +618,6 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
   };
 
 
-  // Load concerns from database (memoized)
-  const loadConcernsForFlow = useCallback(async (flowId) => {
-    if (!sessionId) {
-      console.log('No sessionId available, skipping concern loading');
-      return;
-    }
-    
-    console.log("loadConcernsForFlow: Called for flow", flowId, "sessionId:", sessionId);
-    setConcernsLoading(true);
-    try {
-      const result = await getCommentsForFlow(flowId, sessionId);
-      if (result.success) {
-        console.log("loadConcernsForFlow: Loaded", result.data.length, "concerns");
-        setConcerns(result.data);
-      } else {
-        console.log("loadConcernsForFlow: Failed to load concerns");
-        setConcerns([]);
-        setErrorMessage('Failed to load concerns. Please try again.');
-      }
-    } catch (error) {
-      console.error('loadConcernsForFlow: Error loading concerns:', error);
-      setConcerns([]);
-      setErrorMessage('Failed to load concerns. Please try again.');
-    } finally {
-      setConcernsLoading(false);
-      console.log("loadConcernsForFlow: Finished loading concerns for", flowId);
-    }
-  }, [sessionId]); // Add sessionId to dependency array
-
   // Navigate to designer
   const goToDesigner = () => {
     router.push('/pages/designer');
@@ -638,6 +625,7 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
 
   // Get concern type label
   const getConcernTypeLabel = (type) => {
+    if (!type) return 'UNKNOWN';
     const typeMap = {
       'confound': 'CONFOUND',
       'bias': 'BIAS',
@@ -658,18 +646,8 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
     }
   };
 
-  // Load theme comments when modal opens
-  useEffect(() => {
-    if (isModalOpen && selectedTheme) {
-      const flowIdToUse = currentFlowId || selectedFlow;
-      if (flowIdToUse) {
-        loadThemeComments(flowIdToUse, selectedTheme.name);
-      }
-    }
-  }, [isModalOpen, selectedTheme, currentFlowId, selectedFlow]);
-
   // Load theme comments from API
-  const loadThemeComments = async (flowId, themeName) => {
+  const loadThemeComments = useCallback(async (flowId, themeName) => {
     if (!sessionId) {
       console.log('No sessionId available, skipping theme comments loading');
       return;
@@ -680,14 +658,7 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
     try {
       console.log("Fetching theme comments for:", flowId, themeName, "sessionId:", sessionId);
       const response = await fetch(`/api/themeComments?flowId=${flowId}&sessionId=${sessionId}&themeName=${themeName}`);
-      
-      if (!response.ok) {
-        throw new Error(`Error: ${response.status}`);
-      }
-      
       const data = await response.json();
-      console.log("Theme comments result:", data);
-      
       if (data.success) {
         setThemeComments(data.data);
       } else {
@@ -698,7 +669,17 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
     } finally {
       setCommentsLoading(false);
     }
-  };
+  }, [sessionId]);
+
+  // Load theme comments when modal opens
+  useEffect(() => {
+    if (isModalOpen && selectedTheme) {
+      const flowIdToUse = currentFlowId || selectedFlow;
+      if (flowIdToUse) {
+        loadThemeComments(flowIdToUse, selectedTheme.name);
+      }
+    }
+  }, [isModalOpen, selectedTheme, currentFlowId, selectedFlow, loadThemeComments]);
 
   // Handle comment submission
   const handleCommentSubmit = async () => {

@@ -20,7 +20,7 @@ import { getFlowsFromDatabase } from '../designer/utils/flowUtils';
 import { getCommentsForFlow } from '../flow-viewer/utils/commentUtils';
 import './activity-1.css';
 
-import SessionConfigPopup from '@/app/components/SessionPopup/SessionConfigPopup';
+import SessionConfigPopup from '../../components/SessionPopup/SessionConfigPopup';
 
 function ActivityContent() {
   const [savedFlows, setSavedFlows] = useState([]);

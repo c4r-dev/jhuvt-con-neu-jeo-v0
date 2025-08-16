@@ -6,7 +6,7 @@ import { useQRCode } from "next-qrcode";
 
 import "./newSession.css";
 
-import Header from "@/app/components/Header/Header";
+import Header from "../../components/Header/Header";
 
 const QRCode = ({ url }) => {
     const { SVG } = useQRCode();
@@ -25,7 +25,7 @@ const QRCode = ({ url }) => {
     );
 };
 
-export function NewSessionContent() {
+function NewSessionContent() {
     const router = useRouter();
 
     // URL param fetching
@@ -41,7 +41,7 @@ export function NewSessionContent() {
         if (!sessionIDParam) {
             router.push(`/pages/newSession-NS?sessionID=${randomSessionID}`);
         }   
-    }, [sessionIDParam, randomSessionID, router]);
+    }, [sessionIDParam, router, randomSessionID]);
 
     // URL construction
     const productionBaseURL = "https://neuroserpin-v0.vercel.app/pages/activity-1?flowId=682f33b87a6b41356cee7202";

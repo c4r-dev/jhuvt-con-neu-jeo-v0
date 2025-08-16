@@ -237,43 +237,8 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
     }
   }, [initialFlowId, themedConcerns, cacheChecked, selectedFlow, setSelectedFlow, setShowDropdown, setThemedConcerns]);
 
-  // Auto-generate word cloud when in non-debug mode
-  useEffect(() => {
-    // Only run in non-debug mode once flows are loaded AND cache has been checked and didn't load data
-    if (cacheChecked && !debugMode && savedFlows.length > 0 && !themedConcerns && !processingConcerns && !autoGenerating) {
-      console.log("Activity-3: Auto-generation: Starting (cache miss or empty).");
-      setAutoGenerating(true);
-      
-      // Find the most recent flow
-      try {
-        const sortedFlows = [...savedFlows].sort((a, b) => {
-          const dateA = a.timestamp || a.createdAt || 0;
-          const dateB = b.timestamp || b.createdAt || 0;
-          return new Date(dateB) - new Date(dateA);
-        });
-        
-        if (sortedFlows.length === 0) {
-          setErrorMessage('No flows available to generate word cloud');
-          setAutoGenerating(false);
-          return;
-        }
-        
-        // Select the most recent flow
-        const mostRecentFlow = sortedFlows[0];
-        console.log("Auto-generation: Selected flow", mostRecentFlow.id);
-        
-        // Load data for this flow (function defined below)
-        loadFlowAndProcess(mostRecentFlow.id);
-      } catch (error) {
-        console.error("Auto-generation error:", error);
-        setErrorMessage('Error starting auto-generation');
-        setAutoGenerating(false);
-      }
-    }
-  }, [cacheChecked, debugMode, savedFlows, themedConcerns, processingConcerns, autoGenerating]);
-
   // Function to load and process a flow
-  const loadFlowAndProcess = async (flowId) => {
+  const loadFlowAndProcess = useCallback(async (flowId) => {
     if (!sessionId) {
       console.log('No sessionId available, skipping processing');
       setErrorMessage('Session ID is required');
@@ -364,17 +329,45 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
     } finally {
       setConcernsLoading(false);
     }
-  };
+  }, [sessionId]);
 
-  // Generate word cloud when themed concerns are available
+  // Auto-generate word cloud when in non-debug mode
   useEffect(() => {
-    if (themedConcerns && themedConcerns.themes && themedConcerns.themes.length > 0 && cloudRef.current) {
-      generateWordCloud();
+    // Only run in non-debug mode once flows are loaded AND cache has been checked and didn't load data
+    if (cacheChecked && !debugMode && savedFlows.length > 0 && !themedConcerns && !processingConcerns && !autoGenerating) {
+      console.log("Activity-3: Auto-generation: Starting (cache miss or empty).");
+      setAutoGenerating(true);
+      
+      // Find the most recent flow
+      try {
+        const sortedFlows = [...savedFlows].sort((a, b) => {
+          const dateA = a.timestamp || a.createdAt || 0;
+          const dateB = b.timestamp || b.createdAt || 0;
+          return new Date(dateB) - new Date(dateA);
+        });
+        
+        if (sortedFlows.length === 0) {
+          setErrorMessage('No flows available to generate word cloud');
+          setAutoGenerating(false);
+          return;
+        }
+        
+        // Select the most recent flow
+        const mostRecentFlow = sortedFlows[0];
+        console.log("Auto-generation: Selected flow", mostRecentFlow.id);
+        
+        // Load data for this flow (function defined below)
+        loadFlowAndProcess(mostRecentFlow.id);
+      } catch (error) {
+        console.error("Auto-generation error:", error);
+        setErrorMessage('Error starting auto-generation');
+        setAutoGenerating(false);
+      }
     }
-  }, [themedConcerns]);
+  }, [cacheChecked, debugMode, savedFlows, themedConcerns, processingConcerns, autoGenerating, loadFlowAndProcess]);
 
   // Generate word cloud visualization
-  const generateWordCloud = () => {
+  const generateWordCloud = useCallback(() => {
     if (!themedConcerns || !themedConcerns.themes) return;
     
     d3.select(cloudRef.current).selectAll("*").remove();
@@ -554,7 +547,14 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
     setTimeout(() => {
       simulation.stop();
     }, 3000);
-  };
+  }, [themedConcerns, debugMode, actualConcernThemeData]);
+
+  // Generate word cloud when themed concerns are available
+  useEffect(() => {
+    if (themedConcerns && themedConcerns.themes && themedConcerns.themes.length > 0 && cloudRef.current) {
+      generateWordCloud();
+    }
+  }, [themedConcerns, generateWordCloud]);
 
   // Handle flow selection from dropdown
   const handleFlowSelection = async (e) => {
@@ -618,15 +618,8 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
     }
   };
 
-  // Load theme comments when modal opens
-  useEffect(() => {
-    if (isModalOpen && selectedTheme && selectedFlow && !selectedTheme.isSpecialActualConcern) {
-      loadThemeComments(selectedFlow, selectedTheme.name);
-    }
-  }, [isModalOpen, selectedTheme, selectedFlow]);
-
   // Load theme comments from API
-  const loadThemeComments = async (flowId, themeName) => {
+  const loadThemeComments = useCallback(async (flowId, themeName) => {
     if (!sessionId) {
       console.log('No sessionId available, skipping theme comments loading');
       return;
@@ -655,7 +648,14 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
     } finally {
       setCommentsLoading(false);
     }
-  };
+  }, [sessionId]);
+
+  // Load theme comments when modal opens
+  useEffect(() => {
+    if (isModalOpen && selectedTheme && selectedFlow && !selectedTheme.isSpecialActualConcern) {
+      loadThemeComments(selectedFlow, selectedTheme.name);
+    }
+  }, [isModalOpen, selectedTheme, selectedFlow, loadThemeComments]);
 
   // Handle comment submission
   const handleCommentSubmit = async () => {
