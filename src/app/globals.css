@@ -9,11 +9,82 @@
   --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 6px 8px rgba(0, 0, 0, 0.15);
-  --font-size-small: 0.875rem; /* 14px */
-  --font-size-base: 1rem;    /* 16px */
-  --font-size-medium: 1.125rem; /* 18px */
-  --font-size-large: 1.25rem;  /* 20px */
+  --font-size-small: 0.875rem;
+  /* 14px */
+  --font-size-base: 1rem;
+  /* 16px */
+  --font-size-medium: 1.125rem;
+  /* 18px */
+  --font-size-large: 1.25rem;
+  /* 20px */
 }
+
+/* dave added below css */
+
+@font-face {
+  font-family: 'General Sans';
+  src: url('/fonts/GeneralSans/GeneralSans-Regular.woff2') format('woff2'),
+    url('/fonts/GeneralSans/GeneralSans-Regular.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
+/* */
+@font-face {
+  font-family: 'General Sans';
+  src: url('/fonts/GeneralSans/GeneralSans-Bold.woff2') format('woff2'),
+    url('/fonts/GeneralSans/GeneralSans-Bold.woff') format('woff');
+  font-weight: bold;
+  font-style: normal;
+}
+
+
+/* Header Styling */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: left;
+  padding: 10px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: white;
+  z-index: 1000;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+  height: 60px; /* Fixed header height */
+}
+/* */
+.favicon-button {
+  background: none !important;
+  border: none !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+/* */
+.favicon {
+  width: 40px;
+  height: 40px;
+  margin-right: 10px;
+  display: block;
+}
+/* */
+.title-container {
+  flex-grow: 1;
+  max-width: 80%;
+  text-align: left;
+}
+/* */
+.title {
+  font-size: clamp(1.2rem, 3vw, 1.8rem);
+  font-family: 'General Sans', sans-serif;
+}
+
+/* dave added above css */
 
 html,
 body {
@@ -24,10 +95,9 @@ body {
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'General Sans', Arial, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-
 }
 
 * {
@@ -46,7 +116,8 @@ a {
   padding: 15px;
   border-radius: 5px;
   min-width: 200px;
-  font-size: var(--font-size-small); /* 14px */
+  font-size: var(--font-size-small);
+  /* 14px */
   box-shadow: var(--shadow-md);
   transition: all 0.3s ease;
   background-color: #fff;
@@ -77,7 +148,8 @@ a {
 .node-header {
   font-weight: bold;
   margin-bottom: 8px;
-  font-size: var(--font-size-base); /* 16px */
+  font-size: var(--font-size-base);
+  /* 16px */
   text-align: center;
 }
 
@@ -174,7 +246,8 @@ a {
 }
 
 .app-logo {
-  font-size: var(--font-size-medium); /* 18px */
+  font-size: var(--font-size-medium);
+  /* 18px */
   font-weight: 600;
   margin-left: 3em;
 }
@@ -190,19 +263,20 @@ a {
 @media (min-width: 768px) {
   .app-navbar {
     position: relative;
-    height: 3.125rem; /* 50px */
+    height: 3.125rem;
+    /* 50px */
     width: 100%;
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
   }
-  
+
   .nav-links {
     flex-direction: row;
     gap: 20px;
     padding: 0;
   }
-  
+
   .app-navbar-header {
     width: auto;
     padding: 0;
@@ -212,9 +286,11 @@ a {
 .nav-links a {
   color: var(--foreground);
   text-decoration: none;
-  font-size: var(--font-size-small); /* 14px */
+  font-size: var(--font-size-small);
+  /* 14px */
   transition: color 0.2s;
-  padding: 0.3125rem 0.625rem; /* 5px 10px */
+  padding: 0.3125rem 0.625rem;
+  /* 5px 10px */
 }
 
 .nav-links a:hover {
@@ -227,31 +303,42 @@ a {
 }
 
 /* Add these styles for the layout */
-html, body, .app-container, .app-main {
+html,
+body,
+.app-container,
+.app-main {
   height: 100%;
 }
 
 .app-container {
   display: flex;
   flex-direction: column;
-  min-height: 100vh; /* Ensure it takes at least full viewport height */
-  position: relative; /* For positioning the toggle button */
+  min-height: 100vh;
+  /* Ensure it takes at least full viewport height */
+  position: relative;
+  /* For positioning the toggle button */
 }
 
 .app-main {
-  flex: 1; /* Allow main content to grow and fill available space */
-  overflow-y: auto; /* Add scroll for main content if it overflows */
-  display: flex; /* Make the main content itself a flex container */
-  flex-direction: column; /* Stack children vertically */
-  margin-top: 0; /* No margin when navbar is closed */
+  flex: 1;
+  /* Allow main content to grow and fill available space */
+  overflow-y: auto;
+  /* Add scroll for main content if it overflows */
+  display: flex;
+  /* Make the main content itself a flex container */
+  flex-direction: column;
+  /* Stack children vertically */
+  margin-top: 0;
+  /* No margin when navbar is closed */
   padding: 20px;
   width: 100%;
   max-width: 100%;
 }
 
 @media (min-width: 768px) {
-  .app-navbar.open ~ .app-main {
-    margin-top: 3.125rem; /* Add top margin when navbar is open */
+  .app-navbar.open~.app-main {
+    margin-top: 3.125rem;
+    /* Add top margin when navbar is open */
   }
 }
 
@@ -287,3 +374,4 @@ html, body, .app-container, .app-main {
   width: 100% !important;
   margin: 0 !important;
 }
+
