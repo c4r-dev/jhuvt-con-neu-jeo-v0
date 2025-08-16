@@ -92,6 +92,26 @@ function WordCloudContent({ initialFlowId }) {
     });
   };
   
+  // Load concerns from database (memoized)
+  const loadConcernsForFlow = useCallback(async (flowId) => {
+    setConcernsLoading(true);
+    try {
+      const result = await getCommentsForFlow(flowId);
+      if (result.success) {
+        setConcerns(result.data);
+      } else {
+        setConcerns([]);
+        setErrorMessage('Failed to load concerns. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error loading concerns:', error);
+      setConcerns([]);
+      setErrorMessage('Failed to load concerns. Please try again.');
+    } finally {
+      setConcernsLoading(false);
+    }
+  }, []);
+
   // Memoized loadFlowData
   const loadFlowData = useCallback((flowId, flows) => {
     const selectedFlowData = flows.find(flow => flow.id === flowId);
@@ -103,7 +123,7 @@ function WordCloudContent({ initialFlowId }) {
         edgeCount: selectedFlowData.edgeCount,
         created: selectedFlowData.timestamp
       });
-      loadConcernsForFlow(flowId); // Defined below
+      loadConcernsForFlow(flowId); // Defined above
     } else {
       // This case should ideally be handled before calling loadFlowData if flowId is invalid
       setErrorMessage(`Flow with ID "${flowId}" not found.`);
@@ -115,7 +135,7 @@ function WordCloudContent({ initialFlowId }) {
           router.replace('/pages/word-cloud', { shallow: true });
       }
     }
-  }, [router, initialFlowId]); // initialFlowId added to dependencies
+  }, [router, initialFlowId, loadConcernsForFlow]); // loadConcernsForFlow added to dependencies
 
   // Load flows from database on component mount
   useEffect(() => {
@@ -161,10 +181,10 @@ function WordCloudContent({ initialFlowId }) {
     if (themedConcerns && themedConcerns.themes && themedConcerns.themes.length > 0 && cloudRef.current) {
       generateWordCloud();
     }
-  }, [themedConcerns]);
+  }, [themedConcerns, generateWordCloud]);
 
   // Generate word cloud visualization
-  const generateWordCloud = () => {
+  const generateWordCloud = useCallback(() => {
     if (!themedConcerns || !themedConcerns.themes) return;
     
     // Clear previous word cloud
@@ -269,7 +289,7 @@ function WordCloudContent({ initialFlowId }) {
           });
         });
     }
-  };
+  }, [themedConcerns]);
 
   // Handle flow selection from dropdown
   const handleFlowSelection = async (e) => {
@@ -295,25 +315,6 @@ function WordCloudContent({ initialFlowId }) {
   };
 
 
-  // Load concerns from database (memoized)
-  const loadConcernsForFlow = useCallback(async (flowId) => {
-    setConcernsLoading(true);
-    try {
-      const result = await getCommentsForFlow(flowId);
-      if (result.success) {
-        setConcerns(result.data);
-      } else {
-        setConcerns([]);
-        setErrorMessage('Failed to load concerns. Please try again.');
-      }
-    } catch (error) {
-      console.error('Error loading concerns:', error);
-      setConcerns([]);
-      setErrorMessage('Failed to load concerns. Please try again.');
-    } finally {
-      setConcernsLoading(false);
-    }
-  }, []); // Empty dependency array as it doesn't depend on component scope variables directly
 
   // Process concerns with OpenAI
   const processConcerns = async () => {

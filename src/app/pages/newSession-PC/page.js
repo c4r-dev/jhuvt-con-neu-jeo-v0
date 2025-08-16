@@ -41,7 +41,7 @@ export function NewSessionContent() {
         if (!sessionIDParam) {
             router.push(`/pages/newSession-PC?sessionID=${randomSessionID}`);
         }
-    }, [sessionIDParam]);
+    }, [sessionIDParam, randomSessionID, router]);
 
     // URL construction
     const productionBaseURL = "https://neuroserpin-v0.vercel.app/pages/PositiveControl1?flowId=6842fc7d81fa9b6e13bda8ab&";

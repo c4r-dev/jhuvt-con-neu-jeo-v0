@@ -25,7 +25,7 @@ const QRCode = ({ url }) => {
     );
 };
 
-export function NewSessionContent() {
+function NewSessionContent() {
     const router = useRouter();
 
     // URL param fetching
@@ -41,7 +41,7 @@ export function NewSessionContent() {
         if (!sessionIDParam) {
             router.push(`/pages/newSession-DAG?sessionID=${randomSessionID}`);
         }   
-    }, [sessionIDParam]);
+    }, [sessionIDParam, randomSessionID, router]);
 
     // URL construction
     const productionBaseURL = "https://neuroserpin-v0.vercel.app/pages/designer-activity";

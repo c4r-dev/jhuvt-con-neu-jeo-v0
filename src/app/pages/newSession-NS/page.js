@@ -41,7 +41,7 @@ export function NewSessionContent() {
         if (!sessionIDParam) {
             router.push(`/pages/newSession-NS?sessionID=${randomSessionID}`);
         }   
-    }, [sessionIDParam]);
+    }, [sessionIDParam, randomSessionID, router]);
 
     // URL construction
     const productionBaseURL = "https://neuroserpin-v0.vercel.app/pages/activity-1?flowId=682f33b87a6b41356cee7202";
