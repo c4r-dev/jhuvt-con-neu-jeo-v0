@@ -352,19 +352,28 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
           return;
         }
         
-        // Select the most recent flow
-        const mostRecentFlow = sortedFlows[0];
-        console.log("Auto-generation: Selected flow", mostRecentFlow.id);
+        // Use flowId from URL if available, otherwise select most recent flow
+        let flowToUse = null;
         
-        // Load data for this flow (function defined below)
-        loadFlowAndProcess(mostRecentFlow.id);
+        // First priority: Use flowId from URL if it exists and is valid
+        if (initialFlowId && savedFlows.some(flow => flow.id === initialFlowId)) {
+          flowToUse = initialFlowId;
+          console.log("Auto-generation: Using flowId from URL", flowToUse);
+        } else {
+          // Fallback: Select the most recent flow
+          flowToUse = sortedFlows[0].id;
+          console.log("Auto-generation: Selected most recent flow", flowToUse);
+        }
+        
+        // Load data for this flow
+        loadFlowAndProcess(flowToUse);
       } catch (error) {
         console.error("Auto-generation error:", error);
         setErrorMessage('Error starting auto-generation');
         setAutoGenerating(false);
       }
     }
-  }, [cacheChecked, debugMode, savedFlows, themedConcerns, processingConcerns, autoGenerating, loadFlowAndProcess]);
+  }, [cacheChecked, debugMode, savedFlows, themedConcerns, processingConcerns, initialFlowId, loadFlowAndProcess]);
 
   // Generate word cloud visualization
   const generateWordCloud = useCallback(() => {
@@ -733,10 +742,20 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
   };
 
   const handleEndActivity = () => {
-    // For now, navigate to home page or a placeholder
-    // router.push('/'); 
-    // Or, if there's a specific end-of-activities page:
-    // router.push('/pages/summary'); // Example
+    // Try to close the browser tab/window
+    // This will work if the tab was opened programmatically
+    const closed = window.close();
+    
+    // If window.close() doesn't work (user-opened tab), try alternative approaches
+    if (!closed) {
+      // Attempt to redirect to a blank page or about:blank
+      try {
+        window.location.href = 'about:blank';
+      } catch (error) {
+        // If all else fails, show a message to the user
+        alert('Activity completed! Please close this tab manually.');
+      }
+    }
   };
 
   return (
@@ -899,6 +918,23 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
       {!debugMode && errorMessage && (
         <div className="error-message">
           {errorMessage}
+        </div>
+      )}
+
+      {/* Show a message when no concerns are available and not loading */}
+      {!themedConcerns && !isLoading && !concernsLoading && !processingConcerns && !autoGenerating && (
+        <div style={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          height: '50vh',
+          textAlign: 'center',
+          color: '#666'
+        }}>
+          <h2>No Concerns Available</h2>
+          <p>No concerns have been submitted for this flow yet.</p>
+          <p>Please add some concerns in Activity 1 first.</p>
         </div>
       )}
 
@@ -1075,24 +1111,19 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
         </div>
       )}
 
-      {/* END ACTIVITY Button - Bottom Right */}
+      {/* END ACTIVITY Button - Bottom Center */}
       <div style={{
         position: 'fixed',
         bottom: '20px',
-        right: '20px',
+        left: '0',
+        right: '0',
+        display: 'flex',
+        justifyContent: 'center',
         zIndex: 1000, // Ensure it's above other elements like the word cloud but below modals
       }}>
         <button
           onClick={handleEndActivity}
-          className="button button-primary" // Leverage existing primary button class for base styling
-          style={{
-            backgroundColor: 'hsl(30, 100%, 50%)', // Orange color
-            borderColor: 'hsl(30, 100%, 40%)',   // Darker orange border
-            color: 'white',
-            padding: '10px 20px',
-            fontSize: '16px',
-            fontWeight: 'bold'
-          }}
+          className="button button-primary"
         >
           END ACTIVITY
         </button>

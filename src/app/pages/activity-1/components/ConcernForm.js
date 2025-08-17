@@ -2,7 +2,7 @@
  * ConcernForm Component
  * 
  * Features:
- * - Add concerns related to specific nodes
+ * - Add concerns related to specific steps
  * - Categorize concerns by type
  * - Store concerns in MongoDB database
  * - Bidirectional node selection with ReactFlow
@@ -168,13 +168,13 @@ const ConcernForm = forwardRef(({ flowName, sessionId, availableNodes, onConcern
           <div className="form-group node-select-group">
             <Select
               isMulti
-              name="nodes"
+              name="steps"
               options={nodeOptions}
               className="basic-multi-select"
               classNamePrefix="select"
               value={selectedNodes}
               onChange={setSelectedNodes}
-              placeholder="Select nodes affected by this concern (or click nodes in the diagram)..."
+              placeholder="Select steps affected by this concern (or click steps in the diagram)..."
               isDisabled={isSubmitting || nodeOptions.length === 0}
             />
           </div>

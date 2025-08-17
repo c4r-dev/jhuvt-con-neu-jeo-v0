@@ -40,7 +40,13 @@ export async function GET(request) {
     await connectMongoDB();
     
     // Get comments for the specified flow and session
+    console.log(`API: Looking for comments with flowId=${flowId}, sessionId=${sessionId}`);
     const comments = await FlowComment.find({ flowId, sessionId }).sort({ timestamp: -1 });
+    console.log(`API: Found ${comments.length} comments`);
+    
+    // Debug: Also check what other flowIds/sessionIds exist
+    const allComments = await FlowComment.find({}).select('flowId sessionId text').limit(10);
+    console.log('API: Sample of all comments in database:', allComments.map(c => ({ flowId: c.flowId, sessionId: c.sessionId, text: c.text?.substring(0, 50) })));
     
     return NextResponse.json(comments);
   } catch (error) {

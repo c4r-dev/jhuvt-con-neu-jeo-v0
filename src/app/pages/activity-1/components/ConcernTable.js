@@ -3,7 +3,7 @@
  * 
  * Features:
  * - Display concerns in a table format
- * - Highlight flow nodes on hover
+ * - Highlight flow steps on hover
  * - Support for concern deletion
  */
 
@@ -61,8 +61,8 @@ const ConcernTable = ({ concerns, isLoading, onConcernHover, onConcernLeave, onC
     }
   };
   
-  // Get affected nodes text
-  const getAffectedNodesText = (nodeLabels) => {
+  // Get affected steps text
+  const getAffectedStepsText = (nodeLabels) => {
     if (!nodeLabels || nodeLabels.length === 0) return '';
     
     if (nodeLabels.length <= 3) {
@@ -86,7 +86,7 @@ const ConcernTable = ({ concerns, isLoading, onConcernHover, onConcernLeave, onC
             <tr>
               <th className="concern-col">CONCERN</th>
               <th className="type-col">TYPE</th>
-              <th className="processes-col">PROCESSES AFFECTED</th>
+              <th className="processes-col">STEPS AFFECTED</th>
               <th className="actions-col"></th>
             </tr>
           </thead>
@@ -100,7 +100,7 @@ const ConcernTable = ({ concerns, isLoading, onConcernHover, onConcernLeave, onC
               >
                 <td className="concern-col">{concern.text}</td>
                 <td className="type-col">{getConcernTypeLabel(concern.commentType)}</td>
-                <td className="processes-col">{getAffectedNodesText(concern.nodeLabels)}</td>
+                <td className="processes-col">{getAffectedStepsText(concern.nodeLabels)}</td>
                 <td className="actions-col">
                   <button 
                     className="delete-button"

@@ -4,7 +4,7 @@
  * Features:
  * - Renders ReactFlow with saved flow data
  * - Manages node state for interactive elements
- * - Supports highlighting nodes when hovering over concerns
+ * - Supports highlighting steps when hovering over concerns
  * - Allows node selection by clicking
  */
 
@@ -114,7 +114,7 @@ const ActivityFlowViewer = ({
     setEdges([]);
     nodesInitialized.current = false;
     flowInitialized.current = false;
-  }, [flowName, setNodes, setEdges]);
+  }, [flowName]);
 
   // Initialize flow from saved data
   useEffect(() => {
@@ -146,7 +146,7 @@ const ActivityFlowViewer = ({
       nodesInitialized.current = false;
       flowInitialized.current = false;
     };
-  }, [flowData, flowName, setNodes, setEdges]);
+  }, [flowData, flowName]);
 
   // Apply highlighting to nodes when highlightedNodes changes
   useEffect(() => {
@@ -164,7 +164,7 @@ const ActivityFlowViewer = ({
         }))
       );
     }
-  }, [highlightedNodes, setNodes]);
+  }, [highlightedNodes]);
 
   // Apply selection to nodes when selectedNodes changes
   useEffect(() => {
@@ -182,7 +182,7 @@ const ActivityFlowViewer = ({
         }))
       );
     }
-  }, [selectedNodes, setNodes]);
+  }, [selectedNodes]);
 
   // Update node data when interacting with toggles, dropdowns, etc.
   const updateNodeData = useCallback((nodeId, newData) => {

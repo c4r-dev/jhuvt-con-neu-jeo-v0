@@ -1098,21 +1098,17 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
         <div style={{
           position: 'fixed',
           bottom: '20px',
-          right: '20px',
+          left: '0',
+          right: '0',
+          display: 'flex',
+          justifyContent: 'center',
           zIndex: 1000,
         }}>
           <button
             onClick={handleContinue}
             className="button button-primary"
-            style={{
-              padding: '12px 24px',
-              fontSize: '16px',
-              fontWeight: 'bold',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-              transition: 'transform 0.2s ease',
-            }}
           >
-            Continue
+            CONTINUE
           </button>
         </div>
       )}

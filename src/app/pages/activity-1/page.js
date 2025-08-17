@@ -3,7 +3,7 @@
  * 
  * Features:
  * - Interactive viewing of saved flowcharts
- * - Concern entry system for nodes with categorization
+ * - Concern entry system for steps with categorization
  * - Table view of concerns with highlighting functionality
  * - Concern persistence in MongoDB database
  * - Bidirectional node selection between flow view and form
@@ -180,13 +180,13 @@ function ActivityContent() {
       if (data) {
         setFlowData(data);
         
-        // Extract nodes for concern selection
+        // Extract steps for concern selection
         if (data.nodes && data.nodes.length > 0) {
-          const nodes = data.nodes.map(node => ({
+          const steps = data.nodes.map(node => ({
             id: node.id,
             label: node.data.elements.label?.text || `Node ${node.id}`
           }));
-          setAvailableNodes(nodes);
+          setAvailableNodes(steps);
         } else {
           setAvailableNodes([]);
         }
@@ -229,7 +229,7 @@ function ActivityContent() {
     setHighlightedNodes(nodeIds);
   }, []);
 
-  // Clear highlighted nodes when mouse leaves
+  // Clear highlighted steps when mouse leaves
   const handleConcernLeave = useCallback(() => {
     setHighlightedNodes([]);
   }, []);
@@ -304,7 +304,7 @@ function ActivityContent() {
               <option value="">Select a flow to view</option>
               {savedFlows.map((flow) => (
                 <option key={flow.id} value={flow.id}>
-                  {flow.name} ({flow.nodeCount} nodes, {flow.edgeCount} edges)
+                  {flow.name} ({flow.nodeCount} steps, {flow.edgeCount} edges)
                 </option>
               ))}
             </select>
@@ -382,11 +382,11 @@ function ActivityContent() {
         <div className="continue-button-container">
           <button 
             onClick={handleContinue}
-            className="button button-primary continue-button"
+            className="button button-primary"
             disabled={concerns.length === 0}
             title={concerns.length === 0 ? "Please add at least one concern before continuing" : ""}
           >
-            Next
+            NEXT
           </button>
         </div>
       )}

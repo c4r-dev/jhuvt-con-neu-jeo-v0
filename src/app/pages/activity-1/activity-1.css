@@ -7,6 +7,7 @@
   /* overflow: auto; */
   background-color: #f5f5f5;
   padding-bottom: 1.875rem; /* 30px */
+  padding-top: 80px; /* Add space for fixed header (60px + 20px buffer) */
   position: relative; /* For positioning the continue button */
 }
 
@@ -73,7 +74,7 @@
 .content-container {
   display: flex;
   flex-direction: row;
-  height: calc(100vh - 120px); /* Adjust based on header height */
+  height: calc(100vh - 200px); /* Adjust for header (60px) + padding (80px) + bottom buffer (60px) */
   overflow: hidden;
 }
 
@@ -100,26 +101,26 @@
   border-radius: 0.3125rem; /* 5px */
   box-shadow: 0 1px 0.1875rem rgba(0, 0, 0, 0.1); /* 3px */
   padding: 0;
-  /* overflow: hidden; */
-  height: 100%;
+  overflow: visible; /* Allow controls to show */
+  height: calc(100% - 20px); /* Account for margin */
   position: relative;
 }
 
-/* Style for selected nodes in ReactFlow */
+/* Style for selected steps in ReactFlow */
 .node-selected {
   border: 4px solid #4287f5 !important;
   box-shadow: 0 0 15px rgba(66, 135, 245, 0.8) !important;
 }
 
-/* Style for highlighted nodes in ReactFlow */
+/* Style for highlighted steps in ReactFlow */
 .node-highlighted {
   border: 4px solid #ff6b6b !important;
   box-shadow: 0 0 15px rgba(255, 107, 107, 0.8) !important;
 }
 
-/* Add explanation text for node interaction */
+/* Add explanation text for step interaction */
 .flow-container::after {
-  content: 'Click on nodes to select them for your concern';
+  content: 'Click on steps to select them for your concern';
   position: absolute;
   bottom: 10px;
   right: 10px;
@@ -394,100 +395,21 @@
   box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
 }
 
-/* Buttons */
-.button {
-  display: inline-block;
-  font-weight: 400;
-  text-align: center;
-  white-space: nowrap;
-  vertical-align: middle;
-  user-select: none;
-  border: 1px solid transparent;
-  padding: 0.5rem 0.75rem; /* 8px 12px */
-  font-size: var(--font-size-small); /* 14px */
-  line-height: 1.5;
-  border-radius: 0.25rem; /* 4px */
-  transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
-  cursor: pointer;
-}
-
-.button-primary {
-  color: #fff;
-  background-color: #007bff;
-  border-color: #007bff;
-}
-
-.button-primary:hover {
-  background-color: #0069d9;
-  border-color: #0062cc;
-}
-
-.button:disabled {
-  opacity: 0.65;
-  cursor: not-allowed;
-}
 
 /* Continue Button Styles */
 .continue-button-container {
   position: fixed; /* Changed from absolute to fixed for viewport positioning */
   bottom: 0;
+  left: 0;
   right: 0;
   padding: 1.25rem; /* 20px for spacing */
   background-color: #f5f5f5; /* Match page background */
   width: 100%; /* Ensure it spans the bottom if needed, or adjust */
   box-sizing: border-box; /* Include padding in width */
   display: flex;
-  justify-content: flex-end;
+  justify-content: center; /* Center the button */
   z-index: 1000; /* Ensure it's above other content */
 }
 
-.continue-button {
-  padding: 0.75rem 1.5rem; /* 12px 24px for a larger button */
-  font-size: 1rem; /* 16px */
-  text-transform: uppercase;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-}
 
-.continue-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  background-color: #cccccc;
-}
-
-.continue-button:disabled:hover {
-  background-color: #cccccc;
-}
-
-/* Add tooltip styles */
-.continue-button[title] {
-  position: relative;
-}
-
-.continue-button[title]:hover::after {
-  content: attr(title);
-  position: absolute;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 8px 12px;
-  background-color: rgba(0, 0, 0, 0.8);
-  color: white;
-  border-radius: 4px;
-  font-size: 14px;
-  white-space: nowrap;
-  z-index: 1000;
-  margin-bottom: 8px;
-}
-
-.continue-button[title]:hover::before {
-  content: '';
-  position: absolute;
-  bottom: calc(100% - 4px);
-  left: 50%;
-  transform: translateX(-50%);
-  border-width: 4px;
-  border-style: solid;
-  border-color: rgba(0, 0, 0, 0.8) transparent transparent transparent;
-  z-index: 1000;
-} 
+ 

@@ -653,14 +653,16 @@ function DesignerActivityPage({ sessionIdFromUrl }) {
             >
               {userInput.trim().length}/20 characters minimum
             </div>
-            <button
-              className={`btn ${userInput.trim().length >= 20 ? 'btn--primary' : 'btn--secondary'} btn--large`}
-              onClick={handlePhase1Submit}
-              disabled={userInput.trim().length < 20}
-              aria-describedby="character-counter"
-            >
-              Continue to Phase 2
-            </button>
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
+              <button
+                className="button button-primary"
+                onClick={handlePhase1Submit}
+                disabled={userInput.trim().length < 20}
+                aria-describedby="character-counter"
+              >
+                CONTINUE TO PHASE 2
+              </button>
+            </div>
           </div>
         </section>
       </div>
