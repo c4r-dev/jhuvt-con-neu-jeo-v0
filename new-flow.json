@@ -133,15 +133,11 @@
           "textBoxes": [
             {
               "visible": true,
-              "text": "Variable cell density."
-            },
-            {
-              "visible": true,
               "text": "Replaced every 7 days."
             },
             {
               "visible": true,
-              "text": "Already assumed sterile."
+              "text": "Already sterile."
             }
           ],
           "toggles": [],

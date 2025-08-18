@@ -27,3 +27,34 @@ export async function GET() {
     return NextResponse.json({ message: "Failed to fetch flowchart data" }, { status: 500 });
   }
 }
+
+export async function PATCH(request) {
+  try {
+    const { id, flowchart } = await request.json();
+    
+    if (!id || !flowchart) {
+      return NextResponse.json({ message: "ID and flowchart data are required" }, { status: 400 });
+    }
+    
+    await connectMongoDB();
+    
+    const updatedFlowchart = await CustomFlowchart.findByIdAndUpdate(
+      id,
+      { flowchart },
+      { new: true }
+    );
+    
+    if (!updatedFlowchart) {
+      return NextResponse.json({ message: "Flowchart not found" }, { status: 404 });
+    }
+    
+    console.log('=== CustomFlowchart API PATCH ===');
+    console.log('Updated flowchart ID:', id);
+    console.log('Updated flowchart data:', updatedFlowchart);
+    
+    return NextResponse.json({ message: "Flowchart updated successfully", data: updatedFlowchart }, { status: 200 });
+  } catch (error) {
+    console.error('Error in CustomFlowchart API PATCH:', error);
+    return NextResponse.json({ message: "Failed to update flowchart" }, { status: 500 });
+  }
+}
