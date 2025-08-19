@@ -33,7 +33,7 @@ const edgeUpdates = [
     source: 'yLCcPE2zfUyKmGQPa0mg7',
     target: 'mgLU4ZtExIeo0oXA3yVay',
     sourceHandle: 'output-bottom',
-    targetHandle: 'input-top',
+    targetHandle: 'input-right',
     type: 'default',
     style: { stroke: "#333", strokeWidth: 2 },
     markerEnd: { type: "arrowclosed" },

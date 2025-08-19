@@ -28,11 +28,12 @@ const CustomNode = ({ id, data, selected, isConnectable, updateNode }) => {
 
   // Create a unique key based on handle configuration to force re-renders when handles change
   const handleConfigKey = useMemo(() => {
-    return `${data.hasInputHandle}-${data.hasTopInputHandle}-${data.hasBottomInputHandle}-${data.hasDoubleTopInputHandle}-${data.hasDoubleBottomInputHandle}-${data.hasOutputHandle}-${data.hasTopOutputHandle}-${data.hasBottomOutputHandle}-${data.hasDoubleBottomOutputHandle}`;
+    return `${data.hasInputHandle}-${data.hasTopInputHandle}-${data.hasBottomInputHandle}-${data.hasRightInputHandle}-${data.hasDoubleTopInputHandle}-${data.hasDoubleBottomInputHandle}-${data.hasOutputHandle}-${data.hasTopOutputHandle}-${data.hasBottomOutputHandle}-${data.hasDoubleBottomOutputHandle}`;
   }, [
     data.hasInputHandle,
     data.hasTopInputHandle, 
     data.hasBottomInputHandle,
+    data.hasRightInputHandle,
     data.hasDoubleTopInputHandle,
     data.hasDoubleBottomInputHandle,
     data.hasOutputHandle,
@@ -356,6 +357,18 @@ const CustomNode = ({ id, data, selected, isConnectable, updateNode }) => {
             isConnectable={isConnectable}
           />
         </>
+      )}
+
+      {/* Added Right Input Handle */}
+      {data.hasRightInputHandle && (
+        <Handle
+          key={`input-right-${id}`}
+          type="target"
+          position={Position.Right}
+          id="input-right"
+          style={{ background: '#555' }}
+          isConnectable={isConnectable}
+        />
       )}
       
       {/* Render all elements in order */}

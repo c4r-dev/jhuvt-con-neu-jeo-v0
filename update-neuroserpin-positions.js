@@ -28,9 +28,9 @@ const CustomFlowchart = mongoose.models.CustomFlowchart || mongoose.model("Custo
 // New position mappings for better layout
 const positionUpdates = {
   'WFgunJwZz89Ngb89ixw4p': { x: 400, y: 20 },   // Top center - likely "Rat embryos"
-  'mgLU4ZtExIeo0oXA3yVay': { x: 350, y: 150 },  // Second level center
+  'mgLU4ZtExIeo0oXA3yVay': { x: 350, y: 175 },  // Second level center
   'qoK3O0-sWd_nC8sIeCy_n': { x: 100, y: 200 },  // Left branch
-  'yLCcPE2zfUyKmGQPa0mg7': { x: 700, y: 200 },  // Right branch
+  'yLCcPE2zfUyKmGQPa0mg7': { x: 700, y: 125 },  // Right branch
   '1WU9oGExEstpRY1dlhDvK': { x: 200, y: 400 },  // Left path continues
   'ZnuLNxIO6uZHIVnra0nMf': { x: 600, y: 400 },  // Right path continues
   'FR6R_kJhNWVezT0pm-hck': { x: 400, y: 650 },  // Center merge point
