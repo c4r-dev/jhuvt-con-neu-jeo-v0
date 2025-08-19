@@ -3,7 +3,7 @@
     {
       "id": "node-1-mice",
       "type": "customNode",
-      "position": { "x": 200, "y": 0 },
+      "position": { "x": 400, "y": 50 },
       "data": {
         "elements": {
           "label": { "visible": true, "text": "16 Mice" },
@@ -25,7 +25,7 @@
     {
       "id": "node-2-random-assignment",
       "type": "customNode",
-      "position": { "x": 200, "y": 150 },
+      "position": { "x": 400, "y": 180 },
       "data": {
         "elements": {
           "label": { "visible": true, "text": "Randomized Assignment" },
@@ -44,7 +44,7 @@
     {
       "id": "node-3-als-group-1",
       "type": "customNode",
-      "position": { "x": 50, "y": 300 },
+      "position": { "x": 200, "y": 320 },
       "data": {
         "elements": {
           "label": { "visible": true, "text": "ALS I Group" },
@@ -63,7 +63,7 @@
     {
       "id": "node-4-als-swim-group",
       "type": "customNode",
-      "position": { "x": 350, "y": 300 },
+      "position": { "x": 600, "y": 320 },
       "data": {
         "elements": {
           "label": { "visible": true, "text": "ALS I SWIM Group" },
@@ -82,7 +82,7 @@
     {
       "id": "node-5-grip-strength-1",
       "type": "customNode",
-      "position": { "x": 200, "y": 450 },
+      "position": { "x": 400, "y": 480 },
       "data": {
         "elements": {
           "label": { "visible": true, "text": "Grip Strength" },
@@ -101,7 +101,7 @@
     {
       "id": "node-6-swim-training",
       "type": "customNode",
-      "position": { "x": 350, "y": 600 },
+      "position": { "x": 600, "y": 620 },
       "data": {
         "elements": {
           "label": { "visible": true, "text": "Swim Training" },
@@ -120,7 +120,7 @@
     {
       "id": "node-7-grip-strength-2",
       "type": "customNode",
-      "position": { "x": 200, "y": 750 },
+      "position": { "x": 400, "y": 760 },
       "data": {
         "elements": {
           "label": { "visible": true, "text": "Grip Strength" },
@@ -139,7 +139,7 @@
     {
       "id": "node-8-sample-preprocessing",
       "type": "customNode",
-      "position": { "x": 200, "y": 900 },
+      "position": { "x": 400, "y": 920 },
       "data": {
         "elements": {
           "label": { "visible": true, "text": "Sample Preprocessing" },
@@ -161,7 +161,7 @@
     {
       "id": "node-9-working-respirometry",
       "type": "customNode",
-      "position": { "x": 50, "y": 1080 },
+      "position": { "x": 200, "y": 1080 },
       "data": {
         "elements": {
           "label": { "visible": true, "text": "Working Respirometry" },
@@ -183,7 +183,7 @@
     {
       "id": "node-10-oxidation-staining",
       "type": "customNode",
-      "position": { "x": 350, "y": 1080 },
+      "position": { "x": 600, "y": 1080 },
       "data": {
         "elements": {
           "label": { "visible": true, "text": "Oxidation Staining" },
@@ -205,7 +205,7 @@
     {
       "id": "node-11-mitochondrial-efficiency",
       "type": "customNode",
-      "position": { "x": 50, "y": 1260 },
+      "position": { "x": 200, "y": 1240 },
       "data": {
         "elements": {
           "label": { "visible": true, "text": "Mitochondrial Efficiency" },
@@ -224,7 +224,7 @@
     {
       "id": "node-12-oxidative-stress",
       "type": "customNode",
-      "position": { "x": 350, "y": 1260 },
+      "position": { "x": 600, "y": 1240 },
       "data": {
         "elements": {
           "label": { "visible": true, "text": "Oxidative Stress" },
