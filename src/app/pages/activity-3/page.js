@@ -98,8 +98,8 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
       {
         _id: 'hardcoded-actual-concern', // Key for mapping
         text: "The study was retracted because the neuroserpin was sterilized with a syringe filter while the neurobasal medium was pre-sterilized. Unfortunately the syringe filter leached a contaminant that invalidated the results.",
-        commentType: "",
-        nodeLabels: ["Entire Study"]
+        commentType: "confound",
+        nodeLabels: ["Neuroserpin and Neurobasal medium"]
       }
     ],
     color: 'hsl(30, 100%, 50%)', // Color for the modal's theme bubble

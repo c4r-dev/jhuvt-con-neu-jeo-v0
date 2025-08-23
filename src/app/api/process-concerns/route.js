@@ -22,8 +22,11 @@ export async function POST(request) {
     const transformedConcerns = concerns.map(concern => ({
       id: concern.id,
       text: concern.text,
-      nodeLabels: [concern.node], // Convert single node to array format
-      commentType: concern.concernType,
+      nodeLabels: concern.nodeLabels, // Keep original nodeLabels array
+      commentType: concern.commentType, // Keep original commentType
+      node: concern.node, // Preserve additional fields
+      concernType: concern.concernType, // Preserve additional fields
+      timestamp: concern.timestamp // Preserve additional fields
     }));
     
     // Construct the prompt for OpenAI

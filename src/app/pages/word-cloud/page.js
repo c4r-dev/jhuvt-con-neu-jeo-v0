@@ -607,7 +607,7 @@ function WordCloudContent({ initialFlowId }) {
               </div>
               
               <div className="modal-comment-section">
-                <h3>Why is this a concern?...</h3>
+                <h3>If prompted, share your reasoning</h3>
                 <textarea 
                   value={commentInput}
                   onChange={handleCommentInputChange}

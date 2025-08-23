@@ -259,6 +259,8 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
           text: concern.text,
           node: concern.node,
           concernType: concern.concernType,
+          commentType: concern.commentType,
+          nodeLabels: concern.nodeLabels,
           timestamp: concern.timestamp
         }));
 
@@ -1046,7 +1048,7 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
               </div>
               
               <div className="modal-comment-section">
-                <h3>Why is this a concern?...</h3>
+                <h3>If prompted, share your reasoning...</h3>
                 
                 {/* Comments list moved above the text input */}
                 <div className="comments-list-container">
