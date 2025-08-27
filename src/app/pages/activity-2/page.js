@@ -259,7 +259,6 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
           text: concern.text,
           node: concern.node,
           concernType: concern.concernType,
-          commentType: concern.commentType,
           nodeLabels: concern.nodeLabels,
           timestamp: concern.timestamp
         }));
@@ -625,17 +624,6 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
     router.push('/pages/designer');
   };
 
-  // Get concern type label
-  const getConcernTypeLabel = (type) => {
-    if (!type) return 'UNKNOWN';
-    const typeMap = {
-      'confound': 'CONFOUND',
-      'bias': 'BIAS',
-      'not_sure': 'NOT SURE',
-      'other': 'OTHER'
-    };
-    return typeMap[type] || type.toUpperCase();
-  };
 
   // Get affected nodes text
   const getAffectedNodesText = (nodeLabels) => {
@@ -889,7 +877,6 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
                     <thead>
                       <tr>
                         <th className="concern-col">CONCERN</th>
-                        <th className="type-col">TYPE</th>
                         <th className="processes-col">PROCESSES AFFECTED</th>
                       </tr>
                     </thead>
@@ -897,10 +884,9 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
                       {concerns.map(concern => (
                         <tr 
                           key={concern._id}
-                          className={`concern-row concern-type-${concern.commentType}`}
+                          className="concern-row"
                         >
                           <td className="concern-col">{concern.text}</td>
-                          <td className="type-col">{getConcernTypeLabel(concern.commentType)}</td>
                           <td className="processes-col">{getAffectedNodesText(concern.nodeLabels)}</td>
                         </tr>
                       ))}
@@ -955,14 +941,12 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
                         <thead>
                           <tr>
                             <th>Concern</th>
-                            <th>Type</th>
                           </tr>
                         </thead>
                         <tbody>
                           {theme.concerns.map((concern, concernIndex) => (
                             <tr key={concernIndex}>
                               <td>{concern.text}</td>
-                              <td>{getConcernTypeLabel(concern.commentType)}</td>
                             </tr>
                           ))}
                         </tbody>
@@ -1030,7 +1014,6 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
                     <thead>
                       <tr>
                         <th className="concern-col">CONCERN TEXT</th>
-                        <th className="type-col">TYPE</th>
                         <th className="processes-col">PROCESSES AFFECTED</th>
                       </tr>
                     </thead>
@@ -1038,7 +1021,6 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
                       {selectedTheme.concerns.map((concern, index) => (
                         <tr key={index}>
                           <td className="concern-col">{concern.text}</td>
-                          <td className="type-col">{getConcernTypeLabel(concern.commentType)}</td>
                           <td className="processes-col">{getAffectedNodesText(concern.nodeLabels)}</td>
                         </tr>
                       ))}

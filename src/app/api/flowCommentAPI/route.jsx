@@ -9,15 +9,22 @@ export async function POST(request) {
   try {
     await connectMongoDB();
     
-    await FlowComment.create({ 
+    // Create comment data object, only include commentType if it's provided
+    const commentData = {
       flowId, 
       sessionId,
       text, 
-      commentType, 
       nodeIds, 
       nodeLabels,
       timestamp: new Date()
-    });
+    };
+    
+    // Only add commentType if it's defined and not null/empty
+    if (commentType && commentType.trim()) {
+      commentData.commentType = commentType;
+    }
+    
+    await FlowComment.create(commentData);
     
     return NextResponse.json({ message: "Comment Added Successfully" }, { status: 201 });
   } catch (error) {

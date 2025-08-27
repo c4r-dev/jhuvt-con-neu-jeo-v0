@@ -14,18 +14,9 @@ import { saveCommentToDatabase } from '../../flow-viewer/utils/commentUtils';
 
 const ConcernForm = forwardRef(({ flowName, sessionId, availableNodes, onConcernUpdate, onNodeSelectionChange }, ref) => {
   const [concernText, setConcernText] = useState('');
-  const [concernType, setConcernType] = useState('');
   const [selectedNodes, setSelectedNodes] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
-
-  // Concern type options
-  const concernTypeOptions = [
-    { value: 'confound', label: 'CONFOUND' },
-    { value: 'bias', label: 'BIAS' },
-    { value: 'not_sure', label: 'NOT SURE' },
-    // { value: 'other', label: 'OTHER' }
-  ];
 
   // Convert availableNodes to format expected by react-select
   const nodeOptions = availableNodes.map(node => ({
@@ -66,7 +57,7 @@ const ConcernForm = forwardRef(({ flowName, sessionId, availableNodes, onConcern
   const handleSubmitConcern = async (e) => {
     e.preventDefault();
     
-    if (!concernText.trim() || selectedNodes.length === 0 || !concernType || !sessionId) {
+    if (!concernText.trim() || selectedNodes.length === 0 || !sessionId) {
       return;
     }
     
@@ -78,7 +69,6 @@ const ConcernForm = forwardRef(({ flowName, sessionId, availableNodes, onConcern
       flowId: flowName,
       sessionId: sessionId,
       text: concernText.trim(),
-      commentType: concernType, // Using the same field in database
       nodeIds: selectedNodes.map(node => node.value),
       nodeLabels: selectedNodes.map(node => node.label),
     };
@@ -89,7 +79,6 @@ const ConcernForm = forwardRef(({ flowName, sessionId, availableNodes, onConcern
       if (result.success) {
         // Reset form
         setConcernText('');
-        setConcernType('');
         setSelectedNodes([]);
         
         // Notify parent that concerns have been updated
@@ -138,30 +127,6 @@ const ConcernForm = forwardRef(({ flowName, sessionId, availableNodes, onConcern
               required
             />
           </div>
-          
-          <div className="form-group concern-dropdown-group">
-            <Select
-              name="dropdown"
-              options={concernTypeOptions}
-              className="concern-type-select"
-              classNamePrefix="select"
-              value={concernTypeOptions.find(option => option.value === concernType)}
-              onChange={(selectedOption) => setConcernType(selectedOption.value)}
-              placeholder="TYPE"
-              isDisabled={isSubmitting}
-              required
-            />
-          </div>
-          
-          <div className="form-group concern-submit-group">
-            <button
-              type="submit"
-              className="button button-primary"
-              disabled={isSubmitting || !concernText.trim() || !concernType || selectedNodes.length === 0}
-            >
-              ADD TO DIAGRAM
-            </button>
-          </div>
         </div>
         
         <div className="form-row">
@@ -177,6 +142,18 @@ const ConcernForm = forwardRef(({ flowName, sessionId, availableNodes, onConcern
               placeholder="Select steps affected by this concern (or click steps in the diagram)..."
               isDisabled={isSubmitting || nodeOptions.length === 0}
             />
+          </div>
+        </div>
+        
+        <div className="form-row">
+          <div className="form-group concern-submit-group">
+            <button
+              type="submit"
+              className="button button-primary"
+              disabled={isSubmitting || !concernText.trim() || selectedNodes.length === 0}
+            >
+              ADD TO DIAGRAM
+            </button>
           </div>
         </div>
       </form>

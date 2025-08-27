@@ -16,6 +16,8 @@ import {
   Background,
   useNodesState,
   useEdgesState,
+  useReactFlow,
+  ReactFlowProvider,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
@@ -96,7 +98,7 @@ const HighlightableNode = (props) => {
   );
 };
 
-const ActivityFlowViewer = ({ 
+const ActivityFlowViewerInner = ({ 
   flowData, 
   flowName, 
   highlightedNodes = [], 
@@ -105,8 +107,10 @@ const ActivityFlowViewer = ({
 }) => {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [initialViewportSet, setInitialViewportSet] = useState(false);
   const nodesInitialized = useRef(false);
   const flowInitialized = useRef(false);
+  const { fitView, getViewport, setViewport } = useReactFlow();
 
   // Reset state when flow changes
   useEffect(() => {
@@ -114,6 +118,7 @@ const ActivityFlowViewer = ({
     setEdges([]);
     nodesInitialized.current = false;
     flowInitialized.current = false;
+    setInitialViewportSet(false);
   }, [flowName]);
 
   // Initialize flow from saved data
@@ -147,6 +152,54 @@ const ActivityFlowViewer = ({
       flowInitialized.current = false;
     };
   }, [flowData, flowName]);
+
+  // Set initial viewport to focus on top half of diagram
+  useEffect(() => {
+    if (nodes.length > 0 && !initialViewportSet) {
+      // Wait a short time for nodes to render
+      const timer = setTimeout(() => {
+        // Find the bounds of all nodes
+        const nodeBounds = nodes.reduce((bounds, node) => {
+          const nodeX = node.position.x;
+          const nodeY = node.position.y;
+          const nodeWidth = node.width || 200; // default width
+          const nodeHeight = node.height || 100; // default height
+          
+          return {
+            minX: Math.min(bounds.minX, nodeX),
+            maxX: Math.max(bounds.maxX, nodeX + nodeWidth),
+            minY: Math.min(bounds.minY, nodeY),
+            maxY: Math.max(bounds.maxY, nodeY + nodeHeight)
+          };
+        }, { 
+          minX: Infinity, 
+          maxX: -Infinity, 
+          minY: Infinity, 
+          maxY: -Infinity 
+        });
+
+        // Calculate viewport to show top 60% of the diagram
+        const diagramHeight = nodeBounds.maxY - nodeBounds.minY;
+        const topSectionHeight = diagramHeight * 0.6;
+        const centerX = (nodeBounds.minX + nodeBounds.maxX) / 2;
+        
+        // Focus on the top portion of the diagram, starting from the very top
+        const topY = nodeBounds.minY;
+
+        // Set smaller zoom to make diagram smaller and more content visible
+        const zoom = Math.min(0.9, Math.max(0.6, 600 / Math.max(nodeBounds.maxX - nodeBounds.minX, topSectionHeight)));
+        
+        // Calculate position to show the top of the diagram
+        const x = -centerX * zoom + window.innerWidth / 4; // Offset for left panel
+        const y = -topY * zoom + 50; // Small margin from top
+
+        setViewport({ x, y, zoom }, { duration: 800 });
+        setInitialViewportSet(true);
+      }, 200);
+
+      return () => clearTimeout(timer);
+    }
+  }, [nodes, initialViewportSet, setViewport]);
 
   // Apply highlighting to nodes when highlightedNodes changes
   useEffect(() => {
@@ -231,7 +284,8 @@ const ActivityFlowViewer = ({
         nodesConnectable={false}
         elementsSelectable={false}
         zoomOnScroll={true}
-        fitView
+        minZoom={0.5}
+        maxZoom={2}
         proOptions={{ hideAttribution: true }}
       >
         <Controls />
@@ -239,6 +293,15 @@ const ActivityFlowViewer = ({
         <Background variant="dots" gap={12} size={1} />
       </ReactFlow>
     </div>
+  );
+};
+
+// Wrapper component with ReactFlowProvider
+const ActivityFlowViewer = (props) => {
+  return (
+    <ReactFlowProvider>
+      <ActivityFlowViewerInner {...props} />
+    </ReactFlowProvider>
   );
 };
 

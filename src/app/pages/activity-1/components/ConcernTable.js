@@ -22,16 +22,6 @@ const ConcernTable = ({ concerns, isLoading, onConcernHover, onConcernLeave, onC
     });
   };
   
-  // Get concern type label
-  const getConcernTypeLabel = (type) => {
-    const typeMap = {
-      'confound': 'CONFOUND',
-      'bias': 'BIAS',
-      'not_sure': 'NOT SURE',
-      'other': 'OTHER'
-    };
-    return typeMap[type] || type.toUpperCase();
-  };
   
   // Handle concern hover
   const handleConcernHover = (nodeIds) => {
@@ -85,7 +75,6 @@ const ConcernTable = ({ concerns, isLoading, onConcernHover, onConcernLeave, onC
           <thead>
             <tr>
               <th className="concern-col">CONCERN</th>
-              <th className="type-col">TYPE</th>
               <th className="processes-col">STEPS AFFECTED</th>
               <th className="actions-col"></th>
             </tr>
@@ -96,10 +85,9 @@ const ConcernTable = ({ concerns, isLoading, onConcernHover, onConcernLeave, onC
                 key={concern._id}
                 onMouseEnter={() => handleConcernHover(concern.nodeIds)}
                 onMouseLeave={handleConcernLeave}
-                className={`concern-row concern-type-${concern.commentType}`}
+                className="concern-row"
               >
                 <td className="concern-col">{concern.text}</td>
-                <td className="type-col">{getConcernTypeLabel(concern.commentType)}</td>
                 <td className="processes-col">{getAffectedStepsText(concern.nodeLabels)}</td>
                 <td className="actions-col">
                   <button 

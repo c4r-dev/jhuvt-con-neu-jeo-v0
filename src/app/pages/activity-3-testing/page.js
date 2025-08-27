@@ -92,7 +92,6 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
         const optimizedConcerns = concernsData.map(concern => ({
           id: concern._id,
           text: concern.text,
-          commentType: concern.commentType,
           nodeLabels: concern.nodeLabels
         }));
         

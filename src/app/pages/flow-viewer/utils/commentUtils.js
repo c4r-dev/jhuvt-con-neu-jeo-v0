@@ -20,8 +20,12 @@ export const saveCommentToDatabase = async (comment) => {
     clearTimeout(timeoutId);
 
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || `Error: ${response.status}`);
+      try {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Error: ${response.status}`);
+      } catch (jsonError) {
+        throw new Error(`Error: ${response.status}${response.statusText ? ` ${response.statusText}` : ''}`);
+      }
     }
 
     const result = await response.json();
@@ -58,8 +62,12 @@ export const getCommentsForFlow = async (flowId, sessionId) => {
     clearTimeout(timeoutId);
     
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || `Error: ${response.status}`);
+      try {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Error: ${response.status}`);
+      } catch (jsonError) {
+        throw new Error(`Error: ${response.status}${response.statusText ? ` ${response.statusText}` : ''}`);
+      }
     }
 
     const comments = await response.json();
@@ -93,8 +101,12 @@ export const deleteComment = async (commentId) => {
     clearTimeout(timeoutId);
     
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || `Error: ${response.status}`);
+      try {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Error: ${response.status}`);
+      } catch (jsonError) {
+        throw new Error(`Error: ${response.status}${response.statusText ? ` ${response.statusText}` : ''}`);
+      }
     }
 
     const result = await response.json();
