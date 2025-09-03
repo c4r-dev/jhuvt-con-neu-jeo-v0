@@ -1177,9 +1177,23 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
                 <div className="modal-theme-bubble" style={{ 
                   backgroundColor: `hsl(${themedConcerns.themes.findIndex(t => t.name === selectedTheme.name) * (360 / themedConcerns.themes.length)}, 70%, 80%)`
                 }}>
-                  {selectedTheme.name.split(/\s+/).map((word, i, arr) => (
-                    <div key={i} className="modal-theme-name-word">{word}</div>
-                  ))}
+                  {selectedTheme.name.split(/\s+/).map((word, i, arr) => {
+                    // Calculate dynamic font size based on word length and number of words
+                    const maxWordLength = Math.max(...selectedTheme.name.split(/\s+/).map(w => w.length));
+                    const wordCount = selectedTheme.name.split(/\s+/).length;
+                    
+                    // Base font size with adjustments for long words and multiple words
+                    let fontSize = 22; // Base size
+                    if (maxWordLength > 12) fontSize = 16; // Very long words
+                    else if (maxWordLength > 8) fontSize = 18; // Long words
+                    else if (wordCount > 2) fontSize = 19; // Multiple words
+                    
+                    return (
+                      <div key={i} className="modal-theme-name-word" style={{ fontSize: `${fontSize}px` }}>
+                        {word}
+                      </div>
+                    );
+                  })}
                 </div>
                 
                 <div className="modal-theme-details">
