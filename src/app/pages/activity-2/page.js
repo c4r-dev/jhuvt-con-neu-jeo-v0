@@ -521,7 +521,7 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
       .attr("dominant-baseline", "middle")
       .style("font-size", d => `${d.fontSize}px`)
       .style("font-family", "Impact")
-      .style("fill", d => d.color.replace("80%", "40%"))
+      .style("fill", "black")
       .text(d => d.text)
       .style("pointer-events", "none");
     
@@ -540,7 +540,7 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
             .attr("y", startY + i * lineHeight)
             .style("font-size", `${effectiveFontSize}px`)
             .style("font-family", "Impact")
-            .style("fill", d.color.replace("80%", "40%"))
+            .style("fill", "black")
             .text(word)
             .style("pointer-events", "none");
         });

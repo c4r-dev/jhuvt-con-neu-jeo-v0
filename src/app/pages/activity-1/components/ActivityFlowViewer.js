@@ -289,7 +289,13 @@ const ActivityFlowViewerInner = ({
         proOptions={{ hideAttribution: true }}
       >
         <Controls />
-        <MiniMap />
+        <MiniMap 
+          style={{
+            height: 90,
+            width: 150,
+          }}
+          className="custom-minimap"
+        />
         <Background variant="dots" gap={12} size={1} />
       </ReactFlow>
     </div>
