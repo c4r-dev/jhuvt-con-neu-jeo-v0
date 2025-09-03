@@ -89,6 +89,8 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
   const [autoGenerationAttempted, setAutoGenerationAttempted] = useState(false); // NEW: Track if auto-generation was attempted
   const [currentFlowId, setCurrentFlowId] = useState(null); // NEW: Track current flow ID for continue button
   const [sessionId, setSessionId] = useState(initialSessionId); // Add sessionId state
+  const [showDebugOverlay, setShowDebugOverlay] = useState(false); // Debug overlay state
+  const [bubbleDebugData, setBubbleDebugData] = useState([]); // Store bubble debug info
   const router = useRouter();
   const cloudRef = useRef(null);
 
@@ -430,11 +432,23 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
       const words = theme.name.split(/\s+/);
       const isMultiWord = words.length > 1;
       
-      // Calculate size based on number of concerns - make larger in non-debug mode
-      // But scale down overall size as requested
+      // Calculate size based on number of concerns with improved frequency-based scaling
       const value = theme.concerns.length;
-      const sizeScaleFactor = debugMode ? 12 : 18; // Reduced from 15/22
-      const fontSize = 8 + Math.sqrt(value) * sizeScaleFactor;
+      
+      // Find min and max concern counts for better scaling
+      const allConcernCounts = themedConcerns.themes.map(t => t.concerns.length);
+      const minConcerns = Math.min(...allConcernCounts);
+      const maxConcerns = Math.max(...allConcernCounts);
+      
+      // Use a more pronounced scaling that better reflects frequency differences
+      const baseSize = debugMode ? 16 : 20; // Base font size
+      const maxAdditionalSize = debugMode ? 24 : 32; // Maximum additional size
+      
+      // Normalize the value between 0 and 1, then apply power scaling for more pronounced differences
+      const normalizedValue = maxConcerns > minConcerns ? (value - minConcerns) / (maxConcerns - minConcerns) : 0.5;
+      const scaledValue = Math.pow(normalizedValue, 0.7); // Power scaling makes differences more visible
+      
+      const fontSize = baseSize + (scaledValue * maxAdditionalSize);
       
       return {
         id: index,
@@ -448,9 +462,28 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
         radius: isMultiWord 
           ? fontSize * (1.4 + (words.length - 1) * 0.5) // Slightly reduced multipliers
           : fontSize * 1.6, // Reduced from 1.8
-        color: `hsl(${index * (360 / themedConcerns.themes.length)}, 70%, 80%)`
+        color: `hsl(${index * (360 / themedConcerns.themes.length)}, 70%, 80%)`,
+        // Debug information
+        debugInfo: {
+          concernCount: value,
+          normalizedValue: normalizedValue,
+          scaledValue: scaledValue,
+          fontSize: Math.round(fontSize),
+          minConcerns: minConcerns,
+          maxConcerns: maxConcerns
+        }
       };
     });
+    
+    // Store debug data for the overlay
+    setBubbleDebugData(bubbleData.map(bubble => ({
+      name: bubble.text,
+      concernCount: bubble.debugInfo.concernCount,
+      fontSize: bubble.debugInfo.fontSize,
+      normalizedValue: bubble.debugInfo.normalizedValue.toFixed(3),
+      scaledValue: bubble.debugInfo.scaledValue.toFixed(3),
+      color: bubble.color
+    })));
     
     // Create SVG
     const svg = d3.select(cloudRef.current)
@@ -855,6 +888,78 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
           >
             Force Generate
           </button>
+        </div>
+      )}
+
+      {/* Debug Overlay Toggle Button - hidden for now */}
+      {false && (
+        <div style={{
+          position: 'fixed',
+          top: '10px',
+          right: '10px',
+          zIndex: 2000,
+        }}>
+          <button
+            onClick={() => setShowDebugOverlay(!showDebugOverlay)}
+            style={{
+              padding: '8px 12px',
+              background: showDebugOverlay ? '#ff6b6b' : '#4dabf7',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '12px',
+              fontWeight: 'bold'
+            }}
+          >
+            {showDebugOverlay ? 'Hide Debug' : 'Show Debug'}
+          </button>
+        </div>
+      )}
+
+      {/* Sticky Debug Overlay */}
+      {showDebugOverlay && bubbleDebugData.length > 0 && (
+        <div style={{
+          position: 'fixed',
+          top: '50px',
+          right: '10px',
+          background: 'rgba(0, 0, 0, 0.9)',
+          color: 'white',
+          padding: '15px',
+          borderRadius: '8px',
+          fontSize: '12px',
+          zIndex: 1999,
+          maxHeight: '70vh',
+          overflowY: 'auto',
+          minWidth: '300px',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)'
+        }}>
+          <h3 style={{ margin: '0 0 10px 0', fontSize: '14px', color: '#ffd43b' }}>
+            Word Bubble Debug Info
+          </h3>
+          <div style={{ fontSize: '11px', marginBottom: '10px', color: '#aaa' }}>
+            Sizing: Base + (Normalized^0.7 × MaxAdditional)
+          </div>
+          {bubbleDebugData
+            .sort((a, b) => b.concernCount - a.concernCount) // Sort by concern count descending
+            .map((bubble, index) => (
+            <div key={index} style={{
+              marginBottom: '8px',
+              padding: '8px',
+              background: 'rgba(255, 255, 255, 0.1)',
+              borderRadius: '4px',
+              borderLeft: `4px solid ${bubble.color}`
+            }}>
+              <div style={{ fontWeight: 'bold', color: '#fff' }}>{bubble.name}</div>
+              <div style={{ color: '#ccc' }}>
+                Concerns: <span style={{ color: '#ffd43b' }}>{bubble.concernCount}</span> | 
+                Font Size: <span style={{ color: '#4dabf7' }}>{bubble.fontSize}px</span>
+              </div>
+              <div style={{ color: '#aaa', fontSize: '10px' }}>
+                Normalized: {bubble.normalizedValue} | Scaled: {bubble.scaledValue}
+              </div>
+            </div>
+          ))}
         </div>
       )}
 

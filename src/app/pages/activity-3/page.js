@@ -48,7 +48,7 @@ Now:
 
 'use client';
 
-import React, { useState, useEffect, useRef, Suspense, useCallback } from 'react';
+import React, { useState, useEffect, useRef, Suspense, useCallback, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getFlowsFromDatabase } from '../designer/utils/flowUtils';
 import { getCommentsForFlow } from '../flow-viewer/utils/commentUtils';
@@ -88,10 +88,13 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
   const [autoGenerating, setAutoGenerating] = useState(false); // State for auto word cloud generation
   const [cacheChecked, setCacheChecked] = useState(false); // New state for cache check
   const [sessionId, setSessionId] = useState(initialSessionId); // Add sessionId state
+  const [showDebugOverlay, setShowDebugOverlay] = useState(false); // Debug overlay state
+  const [bubbleDebugData, setBubbleDebugData] = useState([]); // Store bubble debug info
   const router = useRouter();
   const cloudRef = useRef(null);
+  const generateWordCloudRef = useRef(null); // Ref to avoid dependency issues
 
-  const actualConcernThemeData = {
+  const actualConcernThemeData = useMemo(() => ({
     name: "Sterilization Artifact",
     isSpecialActualConcern: true,
     concerns: [
@@ -103,7 +106,7 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
       }
     ],
     color: 'hsl(30, 100%, 50%)', // Color for the modal's theme bubble
-  };
+  }), []);
 
   // Format date for display
   const formatDate = (timestamp) => {
@@ -409,9 +412,24 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
     let bubbleData = themedConcerns.themes.map((theme, index) => {
       const words = theme.name.split(/\s+/);
       const isMultiWord = words.length > 1;
+      
+      // Calculate size based on number of concerns with improved frequency-based scaling
       const value = theme.concerns.length;
-      const sizeScaleFactor = debugMode ? 12 : 18;
-      const fontSize = 8 + Math.sqrt(value) * sizeScaleFactor;
+      
+      // Find min and max concern counts for better scaling
+      const allConcernCounts = themedConcerns.themes.map(t => t.concerns.length);
+      const minConcerns = Math.min(...allConcernCounts);
+      const maxConcerns = Math.max(...allConcernCounts);
+      
+      // Use a more pronounced scaling that better reflects frequency differences
+      const baseSize = debugMode ? 16 : 20; // Base font size
+      const maxAdditionalSize = debugMode ? 24 : 32; // Maximum additional size
+      
+      // Normalize the value between 0 and 1, then apply power scaling for more pronounced differences
+      const normalizedValue = maxConcerns > minConcerns ? (value - minConcerns) / (maxConcerns - minConcerns) : 0.5;
+      const scaledValue = Math.pow(normalizedValue, 0.7); // Power scaling makes differences more visible
+      
+      const fontSize = baseSize + (scaledValue * maxAdditionalSize);
 
       return {
         id: `theme-${index}`, // Ensure unique ID
@@ -425,7 +443,16 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
           ? fontSize * (1.4 + (words.length - 1) * 0.5)
           : fontSize * 1.6,
         color: `hsl(${index * (360 / themedConcerns.themes.length)}, 70%, 80%)`,
-        isActualConcern: false
+        isActualConcern: false,
+        // Debug information
+        debugInfo: {
+          concernCount: value,
+          normalizedValue: normalizedValue,
+          scaledValue: scaledValue,
+          fontSize: Math.round(fontSize),
+          minConcerns: minConcerns,
+          maxConcerns: maxConcerns
+        }
       };
     });
 
@@ -446,8 +473,28 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
         : actualConcernFontSize * 1.6 + 10, // Extra padding
       color: 'hsl(30, 100%, 50%)', // A distinct orange color
       isActualConcern: true,
+      // Debug information for actual concern bubble
+      debugInfo: {
+        concernCount: 1, // Special case
+        normalizedValue: 'N/A',
+        scaledValue: 'N/A',
+        fontSize: Math.round(actualConcernFontSize),
+        minConcerns: 'N/A',
+        maxConcerns: 'N/A'
+      }
       // textWidth and textHeight will be calculated below
     });
+
+    // Store debug data for the overlay
+    setBubbleDebugData(bubbleData.map(bubble => ({
+      name: bubble.text,
+      concernCount: bubble.debugInfo.concernCount,
+      fontSize: bubble.debugInfo.fontSize,
+      normalizedValue: bubble.debugInfo.normalizedValue === 'N/A' ? 'N/A' : bubble.debugInfo.normalizedValue.toFixed(3),
+      scaledValue: bubble.debugInfo.scaledValue === 'N/A' ? 'N/A' : bubble.debugInfo.scaledValue.toFixed(3),
+      color: bubble.color,
+      isActualConcern: bubble.isActualConcern || false
+    })));
 
     const svg = d3.select(cloudRef.current)
       .append("svg")
@@ -580,15 +627,18 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
     }, 3000);
   }, [themedConcerns, debugMode, actualConcernThemeData]);
 
+  // Store the function in a ref to avoid dependency issues
+  generateWordCloudRef.current = generateWordCloud;
+
   // Generate word cloud when themed concerns are available
   useEffect(() => {
     if (themedConcerns && themedConcerns.themes && themedConcerns.themes.length > 0 && cloudRef.current) {
       // Add a small delay to ensure CSS layout has been applied
       setTimeout(() => {
-        generateWordCloud();
+        generateWordCloudRef.current?.();
       }, 50);
     }
-  }, [themedConcerns, generateWordCloud]);
+  }, [themedConcerns, debugMode]); // Remove actualConcernThemeData to prevent infinite loop
 
   // Add window resize listener to make word cloud responsive
   useEffect(() => {
@@ -604,7 +654,7 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
           console.log("Activity-3: Window resized, regenerating word cloud");
           // Add a small delay to allow layout to settle
           setTimeout(() => {
-            generateWordCloud();
+            generateWordCloudRef.current?.();
           }, 50);
         }
       }, 300);
@@ -617,7 +667,7 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
       window.removeEventListener('resize', handleResize);
       clearTimeout(window.resizeTimeout);
     };
-  }, [themedConcerns, generateWordCloud]);
+  }, [themedConcerns]); // Remove generateWordCloud to prevent infinite loop
 
   // Handle flow selection from dropdown
   const handleFlowSelection = async (e) => {
@@ -843,6 +893,90 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
         </div>
       )}
 
+      {/* Debug Overlay Toggle Button - hidden for now */}
+      {false && (
+        <div style={{
+          position: 'fixed',
+          top: '10px',
+          right: '10px',
+          zIndex: 2000,
+        }}>
+          <button
+            onClick={() => setShowDebugOverlay(!showDebugOverlay)}
+            style={{
+              padding: '8px 12px',
+              background: showDebugOverlay ? '#ff6b6b' : '#4dabf7',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '12px',
+              fontWeight: 'bold'
+            }}
+          >
+            {showDebugOverlay ? 'Hide Debug' : 'Show Debug'}
+          </button>
+        </div>
+      )}
+
+      {/* Sticky Debug Overlay */}
+      {showDebugOverlay && bubbleDebugData.length > 0 && (
+        <div style={{
+          position: 'fixed',
+          top: '50px',
+          right: '10px',
+          background: 'rgba(0, 0, 0, 0.9)',
+          color: 'white',
+          padding: '15px',
+          borderRadius: '8px',
+          fontSize: '12px',
+          zIndex: 1999,
+          maxHeight: '70vh',
+          overflowY: 'auto',
+          minWidth: '300px',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)'
+        }}>
+          <h3 style={{ margin: '0 0 10px 0', fontSize: '14px', color: '#ffd43b' }}>
+            Word Bubble Debug Info
+          </h3>
+          <div style={{ fontSize: '11px', marginBottom: '10px', color: '#aaa' }}>
+            Sizing: Base + (Normalized^0.7 × MaxAdditional)
+          </div>
+          {bubbleDebugData
+            .sort((a, b) => {
+              // Sort actual concern to top, then by concern count
+              if (a.isActualConcern) return -1;
+              if (b.isActualConcern) return 1;
+              return b.concernCount - a.concernCount;
+            })
+            .map((bubble, index) => (
+            <div key={index} style={{
+              marginBottom: '8px',
+              padding: '8px',
+              background: bubble.isActualConcern 
+                ? 'rgba(255, 165, 0, 0.2)' // Orange background for actual concern
+                : 'rgba(255, 255, 255, 0.1)',
+              borderRadius: '4px',
+              borderLeft: `4px solid ${bubble.color}`,
+              border: bubble.isActualConcern ? '1px solid hsl(30, 100%, 50%)' : 'none'
+            }}>
+              <div style={{ fontWeight: 'bold', color: '#fff' }}>
+                {bubble.name} {bubble.isActualConcern && '(Actual Concern)'}
+              </div>
+              <div style={{ color: '#ccc' }}>
+                Concerns: <span style={{ color: '#ffd43b' }}>{bubble.concernCount}</span> | 
+                Font Size: <span style={{ color: '#4dabf7' }}>{bubble.fontSize}px</span>
+              </div>
+              {!bubble.isActualConcern && (
+                <div style={{ color: '#aaa', fontSize: '10px' }}>
+                  Normalized: {bubble.normalizedValue} | Scaled: {bubble.scaledValue}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Show header and flow selection only in debug mode */}
       {debugMode && (
         <>
@@ -1038,7 +1172,7 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
           
           {/* Word Cloud Visualization - always shown */}
           <div className="word-cloud-visualization">
-            <h2>CLICK WORDS TO EXPLORE THE GROUP&apos;S CONCERNS</h2>
+            <h2>SOne factor caused this paper to be retracted. Check it out!</h2>
             <div 
               className="word-cloud-container" 
               ref={cloudRef}
