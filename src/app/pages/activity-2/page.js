@@ -400,7 +400,30 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
     d3.select(cloudRef.current).selectAll("*").remove();
     
     const width = cloudRef.current.clientWidth;
-    const height = debugMode ? 500 : cloudRef.current.clientHeight || 700;
+    // Improve height calculation for better responsiveness
+    let height;
+    if (debugMode) {
+      height = 500;
+    } else {
+      // Get the actual container dimensions after CSS has been applied
+      const containerHeight = cloudRef.current.clientHeight;
+      const containerOffsetHeight = cloudRef.current.offsetHeight;
+      
+      // Use the larger of the two measurements, accounting for padding
+      const actualHeight = Math.max(containerHeight, containerOffsetHeight);
+      
+      if (actualHeight > 200) { // Reasonable threshold
+        height = actualHeight - 40; // Account for padding
+      } else {
+        // Fallback: Calculate based on viewport
+        const viewportHeight = window.innerHeight;
+        height = Math.max(500, viewportHeight * 0.7); // Use 70% of viewport height
+      }
+      
+      // Ensure reasonable bounds
+      height = Math.max(height, 500);
+      height = Math.min(height, window.innerHeight * 0.9); // Don't exceed 90% of viewport
+    }
     
     // Prepare data for word cloud
     const bubbleData = themedConcerns.themes.map((theme, index) => {
@@ -572,7 +595,10 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
     console.log("Activity-2: Word cloud generation useEffect. themedConcerns:", themedConcerns, "cloudRef.current:", cloudRef.current, "Debug Mode:", debugMode);
     if (themedConcerns && themedConcerns.themes && themedConcerns.themes.length > 0 && cloudRef.current) {
       console.log("Activity-2: Conditions met, calling generateWordCloud. ClientWidth:", cloudRef.current.clientWidth, "ClientHeight:", cloudRef.current.clientHeight);
-      generateWordCloud();
+      // Add a small delay to ensure CSS layout has been applied
+      setTimeout(() => {
+        generateWordCloud();
+      }, 50);
     } else {
       console.log("Activity-2: Conditions NOT met for word cloud generation. Reasons:", {
         hasThemedConcerns: !!themedConcerns,
@@ -582,6 +608,35 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
       });
     }
   }, [themedConcerns, debugMode, generateWordCloud]); // Added generateWordCloud to dependency array
+
+  // Add window resize listener to make word cloud responsive
+  useEffect(() => {
+    if (!themedConcerns || !themedConcerns.themes || themedConcerns.themes.length === 0) {
+      return;
+    }
+
+    const handleResize = () => {
+      // Debounce resize events to avoid excessive re-renders
+      clearTimeout(window.resizeTimeout);
+      window.resizeTimeout = setTimeout(() => {
+        if (cloudRef.current) {
+          console.log("Activity-2: Window resized, regenerating word cloud");
+          // Add a small delay to allow layout to settle
+          setTimeout(() => {
+            generateWordCloud();
+          }, 50);
+        }
+      }, 300);
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      clearTimeout(window.resizeTimeout);
+    };
+  }, [themedConcerns, generateWordCloud]);
 
   // Handle flow selection from dropdown
   const handleFlowSelection = async (e) => {
