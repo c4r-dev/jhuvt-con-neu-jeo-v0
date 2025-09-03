@@ -427,6 +427,12 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
       height = Math.min(height, window.innerHeight * 0.9); // Don't exceed 90% of viewport
     }
     
+    // Calculate responsive scaling factor based on screen width
+    const screenWidth = window.innerWidth;
+    const responsiveScale = screenWidth < 768 ? 0.7 : // Mobile: 70% size
+                           screenWidth < 1024 ? 0.85 : // Tablet: 85% size  
+                           1.0; // Desktop: full size
+    
     // Prepare data for word cloud
     const bubbleData = themedConcerns.themes.map((theme, index) => {
       const words = theme.name.split(/\s+/);
@@ -441,8 +447,8 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
       const maxConcerns = Math.max(...allConcernCounts);
       
       // Use a more pronounced scaling that better reflects frequency differences
-      const baseSize = debugMode ? 16 : 20; // Base font size
-      const maxAdditionalSize = debugMode ? 24 : 32; // Maximum additional size
+      const baseSize = (debugMode ? 16 : 20) * responsiveScale; // Base font size with responsive scaling
+      const maxAdditionalSize = (debugMode ? 24 : 32) * responsiveScale; // Maximum additional size with responsive scaling
       
       // Normalize the value between 0 and 1, then apply power scaling for more pronounced differences
       const normalizedValue = maxConcerns > minConcerns ? (value - minConcerns) / (maxConcerns - minConcerns) : 0.5;
@@ -458,10 +464,10 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
         fontSize: fontSize,
         value: value,
         theme: theme,
-        // Calculate initial radius - will be adjusted later if needed
+        // Calculate initial radius - will be adjusted later if needed (responsive scaling applied)
         radius: isMultiWord 
-          ? fontSize * (1.4 + (words.length - 1) * 0.5) // Slightly reduced multipliers
-          : fontSize * 1.6, // Reduced from 1.8
+          ? fontSize * (1.4 + (words.length - 1) * 0.5) * responsiveScale // Apply responsive scaling to radius
+          : fontSize * 1.6 * responsiveScale, // Apply responsive scaling to radius
         color: `hsl(${index * (360 / themedConcerns.themes.length)}, 70%, 80%)`,
         // Debug information
         debugInfo: {
@@ -470,7 +476,9 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
           scaledValue: scaledValue,
           fontSize: Math.round(fontSize),
           minConcerns: minConcerns,
-          maxConcerns: maxConcerns
+          maxConcerns: maxConcerns,
+          responsiveScale: responsiveScale,
+          screenWidth: screenWidth
         }
       };
     });
@@ -482,7 +490,9 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
       fontSize: bubble.debugInfo.fontSize,
       normalizedValue: bubble.debugInfo.normalizedValue.toFixed(3),
       scaledValue: bubble.debugInfo.scaledValue.toFixed(3),
-      color: bubble.color
+      color: bubble.color,
+      responsiveScale: bubble.debugInfo.responsiveScale,
+      screenWidth: bubble.debugInfo.screenWidth
     })));
     
     // Create SVG
@@ -522,7 +532,7 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
         bubble.textWidth = maxWidth;
         bubble.textHeight = textHeight;
         bubble.radius = Math.max(bubble.radius, 
-          Math.sqrt(Math.pow(maxWidth / 1.5, 2) + Math.pow(textHeight / 1.5, 2)) + 15); // Reduced padding from 20
+          Math.sqrt(Math.pow(maxWidth / 1.5, 2) + Math.pow(textHeight / 1.5, 2)) + (15 * responsiveScale)); // Apply responsive scaling to padding
       } else {
         const text = textGroup.append("text")
           .style("font-size", `${bubble.fontSize}px`)
@@ -533,7 +543,7 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
         bubble.textWidth = bbox.width;
         bubble.textHeight = bbox.height;
         bubble.radius = Math.max(bubble.radius, 
-          Math.sqrt(Math.pow(bbox.width / 1.5, 2) + Math.pow(bbox.height / 1.5, 2)) + 12); // Reduced padding from 15
+          Math.sqrt(Math.pow(bbox.width / 1.5, 2) + Math.pow(bbox.height / 1.5, 2)) + (12 * responsiveScale)); // Apply responsive scaling to padding
       }
       
       textGroup.remove(); // Remove temporary elements
@@ -543,8 +553,8 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
     const simulation = d3.forceSimulation(bubbleData)
       // Center force pulls bubbles toward center
       .force("center", d3.forceCenter(0, 0))
-      // Collision force with padding to avoid overlap - reduced strength for wider spread
-      .force("collision", d3.forceCollide().radius(d => d.radius + 8).strength(0.7))
+      // Collision force with padding to avoid overlap - responsive padding
+      .force("collision", d3.forceCollide().radius(d => d.radius + (8 * responsiveScale)).strength(0.7))
       // X positioning force - increased strength for wider distribution
       .force("x", d3.forceX().strength(0.03))
       // Y positioning force
@@ -938,7 +948,10 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
             Word Bubble Debug Info
           </h3>
           <div style={{ fontSize: '11px', marginBottom: '10px', color: '#aaa' }}>
-            Sizing: Base + (Normalized^0.7 × MaxAdditional)
+            Sizing: Base + (Normalized^0.7 × MaxAdditional) × ResponsiveScale
+          </div>
+          <div style={{ fontSize: '10px', marginBottom: '10px', color: '#888' }}>
+            Screen: {bubbleDebugData[0]?.screenWidth}px | Scale: {bubbleDebugData[0]?.responsiveScale}x
           </div>
           {bubbleDebugData
             .sort((a, b) => b.concernCount - a.concernCount) // Sort by concern count descending

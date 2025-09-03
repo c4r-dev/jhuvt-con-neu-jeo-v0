@@ -409,6 +409,12 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
       height = Math.min(height, window.innerHeight * 0.9); // Don't exceed 90% of viewport
     }
     
+    // Calculate responsive scaling factor based on screen width
+    const screenWidth = window.innerWidth;
+    const responsiveScale = screenWidth < 768 ? 0.7 : // Mobile: 70% size
+                           screenWidth < 1024 ? 0.85 : // Tablet: 85% size  
+                           1.0; // Desktop: full size
+    
     let bubbleData = themedConcerns.themes.map((theme, index) => {
       const words = theme.name.split(/\s+/);
       const isMultiWord = words.length > 1;
@@ -422,8 +428,8 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
       const maxConcerns = Math.max(...allConcernCounts);
       
       // Use a more pronounced scaling that better reflects frequency differences
-      const baseSize = debugMode ? 16 : 20; // Base font size
-      const maxAdditionalSize = debugMode ? 24 : 32; // Maximum additional size
+      const baseSize = (debugMode ? 16 : 20) * responsiveScale; // Base font size with responsive scaling
+      const maxAdditionalSize = (debugMode ? 24 : 32) * responsiveScale; // Maximum additional size with responsive scaling
       
       // Normalize the value between 0 and 1, then apply power scaling for more pronounced differences
       const normalizedValue = maxConcerns > minConcerns ? (value - minConcerns) / (maxConcerns - minConcerns) : 0.5;
@@ -440,8 +446,8 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
         value: value,
         theme: theme, // Keep original theme data for modal
         radius: isMultiWord
-          ? fontSize * (1.4 + (words.length - 1) * 0.5)
-          : fontSize * 1.6,
+          ? fontSize * (1.4 + (words.length - 1) * 0.5) * responsiveScale
+          : fontSize * 1.6 * responsiveScale,
         color: `hsl(${index * (360 / themedConcerns.themes.length)}, 70%, 80%)`,
         isActualConcern: false,
         // Debug information
@@ -451,7 +457,9 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
           scaledValue: scaledValue,
           fontSize: Math.round(fontSize),
           minConcerns: minConcerns,
-          maxConcerns: maxConcerns
+          maxConcerns: maxConcerns,
+          responsiveScale: responsiveScale,
+          screenWidth: screenWidth
         }
       };
     });
@@ -459,7 +467,7 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
     // Add the "ACTUAL CONCERN" bubble
     const actualConcernText = "Sterilization Artifact";
     const actualConcernWords = actualConcernText.split(/\s+/);
-    const actualConcernFontSize = debugMode ? 25 : 35; // Prominent font size
+    const actualConcernFontSize = (debugMode ? 25 : 35) * responsiveScale; // Prominent font size with responsive scaling
     bubbleData.push({
       id: 'actual-concern-bubble',
       text: actualConcernText,
@@ -469,8 +477,8 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
       value: 10, // Arbitrary value for size, can be adjusted
       theme: actualConcernThemeData, // Use the special theme data here
       radius: actualConcernWords.length > 1 
-        ? actualConcernFontSize * (1.4 + (actualConcernWords.length -1) * 0.5) + 10 // Extra padding
-        : actualConcernFontSize * 1.6 + 10, // Extra padding
+        ? (actualConcernFontSize * (1.4 + (actualConcernWords.length -1) * 0.5) + (10 * responsiveScale)) // Extra padding with responsive scaling
+        : (actualConcernFontSize * 1.6 + (10 * responsiveScale)), // Extra padding with responsive scaling
       color: 'hsl(30, 100%, 50%)', // A distinct orange color
       isActualConcern: true,
       // Debug information for actual concern bubble
@@ -480,7 +488,9 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
         scaledValue: 'N/A',
         fontSize: Math.round(actualConcernFontSize),
         minConcerns: 'N/A',
-        maxConcerns: 'N/A'
+        maxConcerns: 'N/A',
+        responsiveScale: responsiveScale,
+        screenWidth: screenWidth
       }
       // textWidth and textHeight will be calculated below
     });
@@ -493,7 +503,9 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
       normalizedValue: bubble.debugInfo.normalizedValue === 'N/A' ? 'N/A' : bubble.debugInfo.normalizedValue.toFixed(3),
       scaledValue: bubble.debugInfo.scaledValue === 'N/A' ? 'N/A' : bubble.debugInfo.scaledValue.toFixed(3),
       color: bubble.color,
-      isActualConcern: bubble.isActualConcern || false
+      isActualConcern: bubble.isActualConcern || false,
+      responsiveScale: bubble.debugInfo.responsiveScale,
+      screenWidth: bubble.debugInfo.screenWidth
     })));
 
     const svg = d3.select(cloudRef.current)
@@ -528,7 +540,7 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
         bubble.textWidth = maxWidth;
         bubble.textHeight = textHeight;
         bubble.radius = Math.max(bubble.radius,
-          Math.sqrt(Math.pow(maxWidth / 1.5, 2) + Math.pow(textHeight / 1.5, 2)) + (bubble.isActualConcern ? 20 : 15));
+          Math.sqrt(Math.pow(maxWidth / 1.5, 2) + Math.pow(textHeight / 1.5, 2)) + ((bubble.isActualConcern ? 20 : 15) * responsiveScale));
       } else {
         const text = textGroup.append("text")
           .style("font-size", `${bubble.fontSize}px`)
@@ -539,14 +551,14 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
         bubble.textWidth = bbox.width;
         bubble.textHeight = bbox.height;
         bubble.radius = Math.max(bubble.radius,
-          Math.sqrt(Math.pow(bbox.width / 1.5, 2) + Math.pow(bbox.height / 1.5, 2)) + (bubble.isActualConcern ? 18 : 12));
+          Math.sqrt(Math.pow(bbox.width / 1.5, 2) + Math.pow(bbox.height / 1.5, 2)) + ((bubble.isActualConcern ? 18 : 12) * responsiveScale));
       }
       textGroup.remove();
     });
 
     const simulation = d3.forceSimulation(bubbleData)
       .force("center", d3.forceCenter(0, 0))
-      .force("collision", d3.forceCollide().radius(d => d.radius + (d.isActualConcern ? 12 : 8) ).strength(0.7))
+      .force("collision", d3.forceCollide().radius(d => d.radius + ((d.isActualConcern ? 12 : 8) * responsiveScale)).strength(0.7))
       .force("x", d3.forceX().strength(0.03))
       .force("y", d3.forceY().strength(0.03))
       .force("charge", d3.forceManyBody().strength(d => -Math.pow(d.radius, 1.4) * (d.isActualConcern ? 0.8 : 0.6) ));
@@ -940,7 +952,10 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
             Word Bubble Debug Info
           </h3>
           <div style={{ fontSize: '11px', marginBottom: '10px', color: '#aaa' }}>
-            Sizing: Base + (Normalized^0.7 × MaxAdditional)
+            Sizing: Base + (Normalized^0.7 × MaxAdditional) × ResponsiveScale
+          </div>
+          <div style={{ fontSize: '10px', marginBottom: '10px', color: '#888' }}>
+            Screen: {bubbleDebugData[0]?.screenWidth}px | Scale: {bubbleDebugData[0]?.responsiveScale}x
           </div>
           {bubbleDebugData
             .sort((a, b) => {
@@ -1172,7 +1187,7 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
           
           {/* Word Cloud Visualization - always shown */}
           <div className="word-cloud-visualization">
-            <h2>SOne factor caused this paper to be retracted. Check it out!</h2>
+            <h2>ONE FACTOR CAUSED THIS PAPER TO BE RETRACTED. CHECK IT OUT!</h2>
             <div 
               className="word-cloud-container" 
               ref={cloudRef}

@@ -44,8 +44,8 @@ function NewSessionContent() {
     }, [sessionIDParam, router, randomSessionID]);
 
     // URL construction
-    const productionBaseURL = "https://neuroserpin-v0.vercel.app/pages/activity-1?flowId=682f33b87a6b41356cee7202";
-    const developmentBaseURL = "https://neuroserpin-v0.vercel.app/pages/activity-1?flowId=682f33b87a6b41356cee7202";
+    const productionBaseURL = "https://neuroserpin-v0.vercel.app/pages/activity-1?flowId=68b884d91a887fdd1888fbac";
+    const developmentBaseURL = "https://neuroserpin-v0.vercel.app/pages/activity-1?flowId=68b884d91a887fdd1888fbac";
     const isDev = false;
     let baseURL = isDev ? developmentBaseURL : productionBaseURL;
     const fullURL = `${baseURL}&sessionID=${sessionID}`;
