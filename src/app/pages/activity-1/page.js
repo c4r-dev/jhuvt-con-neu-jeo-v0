@@ -45,7 +45,7 @@ function ActivityContent() {
   const sessionIdFromUrl = searchParams.get('sessionID');
   
   // Default flowID to use when none is provided
-  const defaultFlowId = '682f33b87a6b41356cee7202';
+  const defaultFlowId = '68b884d91a887fdd1888fbac';
 
   // Generate a random sessionID
   const generateSessionId = () => {
