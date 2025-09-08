@@ -19,7 +19,7 @@ export default function RootLayout({
     <html lang="en">
 
       <head>
-        <title>NEUROSERPIN</title>
+        <title>Identify concerns in this neuroserpin study</title>
         <meta name="description" content="NEUROSERPIN" />
         <link rel="icon" href="/favicon.ico" sizes="any" />
       </head>
@@ -41,7 +41,7 @@ export default function RootLayout({
             />
           </button>
           <div className="title-container"> {/* Title container class */}
-            <h1 className="title">NEUROSERPIN</h1> {/* Title class */}
+            <h1 className="title">Identify concerns in this neuroserpin study</h1> {/* Title class */}
           </div>
         </header>
 

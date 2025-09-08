@@ -9,7 +9,7 @@ import ravenImage from "./01_RR_Large.png";
 // Pass in onLogoClick and onHelpClick functions to handle logo and help button clicks
 // Optional title prop can be passed to customize the header title text
 
-const Header = ({ onLogoClick, onHelpClick, title = "Positive Controls" }) => {
+const Header = ({ onLogoClick, onHelpClick, title = "Identify concerns in this neuroserpin study" }) => {
     const handleLogoClick = () => {
         if (onLogoClick) {
             // console.log("Logo clicked, calling onLogoClick");

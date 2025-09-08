@@ -64,7 +64,7 @@ function NewSessionContent() {
     return (
         <div className="new-session-container">
             <div className="new-session">
-                <Header title="Neuroserpin" />
+                <Header title="Identify concerns in this neuroserpin study" />
 
                 <div className="page-container">
 
