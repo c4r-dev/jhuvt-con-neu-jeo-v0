@@ -398,6 +398,12 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
   const generateWordCloud = useCallback(() => {
     if (!themedConcerns || !themedConcerns.themes) return;
     
+    // Clean up any previous simulation
+    if (cloudRef.current && cloudRef.current._simulationCleanup) {
+      cloudRef.current._simulationCleanup();
+      cloudRef.current._simulationCleanup = null;
+    }
+    
     // Clear previous word cloud
     d3.select(cloudRef.current).selectAll("*").remove();
     
@@ -627,10 +633,72 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
       bubbles.attr("transform", d => `translate(${d.x},${d.y})`);
     });
     
+    // Store simulation reference for cleanup and restart capability
+    let simulationTimeout;
+    let isSimulationStopped = false;
+    
+    // Function to check if bubbles are clustered in center (indicates stuck simulation)
+    const checkBubblesPosition = () => {
+      const centerThreshold = 50; // pixels from center
+      const clusteredBubbles = bubbleData.filter(d => 
+        Math.abs(d.x || 0) < centerThreshold && Math.abs(d.y || 0) < centerThreshold
+      );
+      
+      // If most bubbles are still in center, restart simulation
+      if (clusteredBubbles.length > bubbleData.length * 0.7 && !isSimulationStopped) {
+        console.log('Detected clustered bubbles, restarting simulation');
+        simulation.alpha(0.3).restart();
+      }
+    };
+    
+    // Function to stop simulation safely
+    const stopSimulation = () => {
+      if (!isSimulationStopped) {
+        simulation.stop();
+        isSimulationStopped = true;
+        if (simulationTimeout) {
+          clearTimeout(simulationTimeout);
+        }
+      }
+    };
+    
     // Stop simulation after a few seconds for performance
+    simulationTimeout = setTimeout(stopSimulation, 3000);
+    
+    // Handle page visibility changes to restart simulation if needed
+    const handleVisibilityChange = () => {
+      if (!document.hidden && !isSimulationStopped) {
+        // Page became visible, check if bubbles are stuck and restart if needed
+        setTimeout(checkBubblesPosition, 100);
+      }
+    };
+    
+    // Periodic check for stuck bubbles (backup mechanism)
+    const periodicCheck = setInterval(() => {
+      if (!isSimulationStopped) {
+        checkBubblesPosition();
+      }
+    }, 1000); // Check every second for the first few seconds
+    
+    // Clear periodic check after 5 seconds
     setTimeout(() => {
-      simulation.stop();
-    }, 3000);
+      clearInterval(periodicCheck);
+    }, 5000);
+    
+    // Add visibility change listener
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    // Store cleanup function for later use
+    const cleanup = () => {
+      stopSimulation();
+      clearInterval(periodicCheck);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+    
+    // Store cleanup function on the cloudRef for potential cleanup
+    if (cloudRef.current) {
+      cloudRef.current._simulationCleanup = cleanup;
+    }
   }, [themedConcerns, debugMode]);
 
   // Generate word cloud when themed concerns are available
@@ -680,6 +748,16 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
       clearTimeout(window.resizeTimeout);
     };
   }, [themedConcerns, generateWordCloud]);
+
+  // Cleanup simulation when component unmounts
+  useEffect(() => {
+    const currentCloudRef = cloudRef.current;
+    return () => {
+      if (currentCloudRef && currentCloudRef._simulationCleanup) {
+        currentCloudRef._simulationCleanup();
+      }
+    };
+  }, []);
 
   // Handle flow selection from dropdown
   const handleFlowSelection = async (e) => {
@@ -898,6 +976,30 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
           >
             Force Generate
           </button>
+          {themedConcerns && (
+            <button 
+              onClick={() => {
+                // Manually move all bubbles to center to test stuck bubble detection
+                if (cloudRef.current) {
+                  const bubbles = d3.select(cloudRef.current).selectAll('.bubble-group');
+                  bubbles.attr('transform', 'translate(0,0)');
+                  console.log('Moved bubbles to center for testing');
+                }
+              }}
+              style={{
+                marginTop: '5px',
+                padding: '3px 8px',
+                background: '#ff6b6b',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                marginLeft: '10px'
+              }}
+            >
+              Test Stuck Bubbles
+            </button>
+          )}
         </div>
       )}
 
@@ -1155,6 +1257,30 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
           {/* Word Cloud Visualization - always shown */}
           <div className="word-cloud-visualization">
             <h2>CLICK WORDS TO EXPLORE THE GROUP&apos;S CONCERNS</h2>
+            
+            {/* Refresh Button */}
+            <div style={{
+              display: 'flex',
+              justifyContent: 'center',
+              margin: '20px 0'
+            }}>
+              <button
+                onClick={() => {
+                  const flowIdToUse = currentFlowId || selectedFlow;
+                  if (flowIdToUse && sessionId) {
+                    setThemedConcerns(null);
+                    setErrorMessage('');
+                    setAutoGenerationAttempted(false);
+                    loadFlowAndProcess(flowIdToUse);
+                  }
+                }}
+                className="button button-secondary"
+                disabled={isLoading || concernsLoading || processingConcerns || autoGenerating}
+              >
+                {(isLoading || concernsLoading || processingConcerns || autoGenerating) ? 'REFRESHING...' : 'REFRESH DATA'}
+              </button>
+            </div>
+            
             <div 
               className="word-cloud-container" 
               ref={cloudRef}

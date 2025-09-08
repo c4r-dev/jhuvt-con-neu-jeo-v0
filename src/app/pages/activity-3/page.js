@@ -375,7 +375,7 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
         setAutoGenerating(false);
       }
     }
-  }, [cacheChecked, debugMode, savedFlows, themedConcerns, processingConcerns, initialFlowId, loadFlowAndProcess]);
+  }, [cacheChecked, debugMode, savedFlows, themedConcerns, processingConcerns, autoGenerating, initialFlowId, loadFlowAndProcess]);
 
   // Generate word cloud visualization
   const generateWordCloud = useCallback(() => {
@@ -1188,10 +1188,49 @@ function WordCloudContent({ initialFlowId, initialSessionId }) {
           {/* Word Cloud Visualization - always shown */}
           <div className="word-cloud-visualization">
             <h2>ONE FACTOR CAUSED THIS PAPER TO BE RETRACTED. CHECK IT OUT!</h2>
-            <div 
-              className="word-cloud-container" 
-              ref={cloudRef}
-            ></div>
+            
+            {/* Refresh Button */}
+            <div style={{
+              display: 'flex',
+              justifyContent: 'center',
+              margin: '20px 0'
+            }}>
+              <button
+                onClick={() => {
+                  if (selectedFlow && sessionId) {
+                    setThemedConcerns(null);
+                    setErrorMessage('');
+                    setCacheChecked(false);
+                    loadFlowAndProcess(selectedFlow);
+                  }
+                }}
+                className="button button-secondary"
+                disabled={isLoading || concernsLoading || processingConcerns || autoGenerating}
+              >
+                {(isLoading || concernsLoading || processingConcerns || autoGenerating) ? 'REFRESHING...' : 'REFRESH DATA'}
+              </button>
+            </div>
+            
+            {(concernsLoading || processingConcerns) && themedConcerns ? (
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: '400px',
+                fontSize: '24px',
+                fontWeight: 'bold',
+                color: '#666'
+              }}>
+                <div className="spinner" style={{ marginBottom: '20px' }}></div>
+                <div>REFRESHING DATA...</div>
+              </div>
+            ) : (
+              <div 
+                className="word-cloud-container" 
+                ref={cloudRef}
+              ></div>
+            )}
           </div>
         </div>
       )}
