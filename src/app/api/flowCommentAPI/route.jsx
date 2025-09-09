@@ -37,7 +37,8 @@ export async function POST(request) {
 export async function GET(request) {
   try {
     const url = new URL(request.url);
-    const flowId = url.searchParams.get("flowId");
+    // const flowId = url.searchParams.get("flowId");
+    const flowId = '68bef748545973b916b70167';
     const sessionId = url.searchParams.get("sessionId");
     
     if (!flowId || !sessionId) {

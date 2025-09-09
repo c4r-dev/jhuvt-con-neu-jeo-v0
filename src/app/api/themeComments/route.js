@@ -10,7 +10,9 @@ export async function GET(request) {
     
     // Get query parameters from URL
     const { searchParams } = new URL(request.url);
-    const flowId = searchParams.get('flowId');
+    // const flowId = searchParams.get('flowId');
+    const flowId = '68bef748545973b916b70167';
+
     const sessionId = searchParams.get('sessionId');
     const themeName = searchParams.get('themeName');
     

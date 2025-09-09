@@ -65,7 +65,8 @@ const SessionConfigPopup = ({
       const url = new URL(`${window.location.origin}/pages/${targetPage}`);
       url.searchParams.set('sessionID', 'individual1');
       if (defaultFlowId) {
-        url.searchParams.set('flowId', defaultFlowId);
+        // url.searchParams.set('flowId', defaultFlowId);
+        url.searchParams.set('flowId', '68bef748545973b916b70167');
       }
       router.push(url.pathname + url.search);
       handleClose();
@@ -79,7 +80,9 @@ const SessionConfigPopup = ({
       const url = new URL(`${window.location.origin}/pages/${targetPage}`);
       url.searchParams.set('sessionID', newSessionID);
       if (defaultFlowId) {
-        url.searchParams.set('flowId', defaultFlowId);
+        // url.searchParams.set('flowId', defaultFlowId);
+        url.searchParams.set('flowId', '68bef748545973b916b70167');
+
       }
       const sharingURL = url.toString();
       generateQRCode(sharingURL);
@@ -95,7 +98,8 @@ const SessionConfigPopup = ({
     const url = new URL(`${window.location.origin}/pages/${targetPage}`);
     url.searchParams.set('sessionID', sessionID);
     if (defaultFlowId) {
-      url.searchParams.set('flowId', defaultFlowId);
+      // url.searchParams.set('flowId', defaultFlowId);
+      url.searchParams.set('flowId', '68bef748545973b916b70167');
     }
     router.push(url.pathname + url.search);
     handleClose();
@@ -106,7 +110,8 @@ const SessionConfigPopup = ({
       const url = new URL(`${window.location.origin}/pages/${targetPage}`);
       url.searchParams.set('sessionID', sessionID);
       if (defaultFlowId) {
-        url.searchParams.set('flowId', defaultFlowId);
+        // url.searchParams.set('flowId', defaultFlowId);
+        url.searchParams.set('flowId', '68bef748545973b916b70167');
       }
       const sharingURL = url.toString();
       await navigator.clipboard.writeText(sharingURL);
@@ -213,7 +218,9 @@ const SessionConfigPopup = ({
                     const url = new URL(`${window.location.origin}/pages/${targetPage}`);
                     url.searchParams.set('sessionID', sessionID);
                     if (defaultFlowId) {
-                      url.searchParams.set('flowId', defaultFlowId);
+                      // url.searchParams.set('flowId', defaultFlowId);
+                      url.searchParams.set('flowId', '68bef748545973b916b70167');
+
                     }
                     return url.toString();
                   })()}
