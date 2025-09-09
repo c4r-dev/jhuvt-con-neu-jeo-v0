@@ -54,6 +54,13 @@
   box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
   height: 60px; /* Fixed header height */
 }
+
+@media (max-width: 768px) {
+  .header {
+    padding: 5px 10px;
+    height: 50px;
+  }
+}
 /* */
 .favicon-button {
   background: none !important;
@@ -72,6 +79,15 @@
   margin-right: 10px;
   display: block;
 }
+
+@media (max-width: 768px) {
+  .favicon {
+    width: 30px;
+    height: 30px;
+    margin-right: 8px;
+  }
+}
+
 /* */
 .title-container {
   flex-grow: 1;
@@ -82,6 +98,12 @@
 .title {
   font-size: clamp(1.2rem, 3vw, 1.8rem);
   font-family: 'General Sans', sans-serif;
+}
+
+@media (max-width: 768px) {
+  .title {
+    font-size: clamp(1rem, 4vw, 1.4rem);
+  }
 }
 
 /* dave added above css */

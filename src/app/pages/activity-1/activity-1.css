@@ -9,6 +9,27 @@
   padding-bottom: 1.875rem; /* 30px */
   padding-top: 80px; /* Add space for fixed header (60px + 20px buffer) */
   position: relative; /* For positioning the continue button */
+  min-height: 100vh;
+}
+
+/* Mobile-first responsive adjustments */
+@media (max-width: 768px) {
+  .activity-page {
+    padding-top: 70px; /* Reduced padding for mobile */
+    padding-bottom: 80px; /* More space for continue button */
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+}
+
+/* Extra small screens (phones in portrait mode) */
+@media (max-width: 480px) {
+  .activity-page {
+    padding-top: 60px;
+    padding-bottom: 90px;
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+  }
 }
 
 /* Header styles */
@@ -41,6 +62,25 @@
   border-radius: 0.25rem; /* 4px */
   font-size: var(--font-size-small); /* 14px */
   background-color: white;
+}
+
+/* Mobile flow selection */
+@media (max-width: 768px) {
+  .activity-header-0 {
+    padding: 0.5rem;
+  }
+  
+  .flow-selection {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .flow-select {
+    min-width: 100%;
+    max-width: 100%;
+    padding: 0.75rem; /* Larger touch targets */
+    font-size: 1rem; /* Larger text for mobile */
+  }
 }
 
 /* Selected flow info styling */
@@ -94,6 +134,30 @@
   position: relative;
 }
 
+/* Mobile layout - stack vertically */
+@media (max-width: 768px) {
+  .content-container {
+    flex-direction: column;
+    height: auto;
+    overflow: visible;
+    gap: 1rem;
+  }
+  
+  .left-panel {
+    width: 100%;
+    order: 1;
+    padding: 0;
+    overflow-y: visible;
+  }
+  
+  .right-panel {
+    width: 100%;
+    order: 2;
+    overflow: visible;
+    min-height: 400px; /* Ensure flow has enough space */
+  }
+}
+
 /* Flow container */
 .flow-container {
   background-color: white;
@@ -104,6 +168,21 @@
   overflow: visible; /* Allow controls to show */
   height: calc(100% - 20px); /* Account for margin */
   position: relative;
+}
+
+@media (max-width: 768px) {
+  .flow-container {
+    margin: 0.5rem 0; /* Reduced horizontal margin */
+    height: 400px; /* Fixed height for mobile */
+    border-radius: 0.5rem;
+  }
+  
+  .flow-container::after {
+    font-size: 10px;
+    padding: 2px 4px;
+    bottom: 5px;
+    right: 5px;
+  }
 }
 
 /* Style for selected steps in ReactFlow */
@@ -154,6 +233,14 @@
   padding: 1.25rem; /* 20px */
 }
 
+@media (max-width: 768px) {
+  .concern-form-container {
+    margin-bottom: 1rem;
+    padding: 1rem;
+    border-radius: 0.5rem;
+  }
+}
+
 .concern-form .form-header h2 {
   margin: 0 0 0.9375rem 0; /* 15px */
   font-size: 1.3rem; /* Kept as rem */
@@ -169,6 +256,26 @@
   color: #495057;
   font-size: 0.95rem; /* Kept as rem */
   line-height: 1.5;
+}
+
+@media (max-width: 768px) {
+  .instruction-text {
+    padding: 1rem;
+    font-size: 1rem;
+    line-height: 1.6;
+    border-radius: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .concern-form .form-header h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .concern-table-wrapper h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
 }
 
 .concern-form {
@@ -207,6 +314,34 @@
   width: 100%;
 }
 
+/* Mobile form adjustments */
+@media (max-width: 768px) {
+  .concern-form .form-row {
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .concern-text-group,
+  .concern-dropdown-group,
+  .concern-submit-group,
+  .node-select-group {
+    width: 100%;
+  }
+  
+  .concern-form input[type="text"] {
+    height: 3rem; /* Larger touch targets */
+    font-size: 1rem;
+    padding: 0.75rem;
+  }
+  
+  .concern-form button {
+    height: 3rem; /* Larger touch targets */
+    font-size: 1rem;
+    padding: 0.75rem 1.5rem;
+  }
+}
+
 /* Button overrides */
 .concern-form button {
   width: 100%;
@@ -225,6 +360,14 @@
   overflow: hidden; /* Prevent outer container scrolling */
   display: flex;
   flex-direction: column;
+}
+
+@media (max-width: 768px) {
+  .concern-table-container {
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin-top: 1rem;
+  }
 }
 
 .concern-table-wrapper {
@@ -248,6 +391,19 @@
   flex: 1;
   display: block; /* Make table behave like a block element for scrolling */
   overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  .concern-table {
+    font-size: 0.85rem;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+  
+  .concern-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+  }
 }
 
 .concern-table thead {
@@ -285,6 +441,70 @@
   border-bottom: 1px solid #f1f3f5;
   word-wrap: break-word; /* Handle long text properly in fixed layout */
   overflow-wrap: break-word;
+}
+
+@media (max-width: 768px) {
+  .concern-table th {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+  }
+  
+  .concern-table td {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+  }
+  
+  /* Make table cells more compact on mobile */
+  .concern-col {
+    width: 50% !important;
+  }
+  
+  .processes-col {
+    width: 35% !important;
+  }
+  
+  .actions-col {
+    width: 15% !important;
+  }
+}
+
+/* Extra small screens adjustments */
+@media (max-width: 480px) {
+  .flow-container {
+    height: 300px; /* Smaller height for very small screens */
+    margin: 0.25rem 0;
+  }
+  
+  .concern-form-container,
+  .concern-table-container {
+    padding: 0.75rem;
+  }
+  
+  .concern-form input[type="text"] {
+    height: 2.75rem;
+    font-size: 0.9rem;
+  }
+  
+  .concern-form button {
+    height: 2.75rem;
+    font-size: 0.9rem;
+  }
+  
+  .instruction-text {
+    padding: 0.75rem;
+    font-size: 0.9rem;
+  }
+  
+  .concern-table th,
+  .concern-table td {
+    padding: 0.375rem 0.5rem;
+    font-size: 0.8rem;
+  }
+  
+  .continue-button-container .button {
+    height: 2.75rem;
+    font-size: 0.9rem;
+  }
 }
 
 .concern-row {
@@ -418,6 +638,15 @@
   box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
 }
 
+@media (max-width: 768px) {
+  .form-control {
+    padding: 0.75rem;
+    font-size: 1rem;
+    border-radius: 0.5rem;
+    min-height: 3rem; /* Ensure proper touch targets */
+  }
+}
+
 
 /* Continue Button Styles */
 .continue-button-container {
@@ -432,6 +661,21 @@
   display: flex;
   justify-content: center; /* Center the button */
   z-index: 1000; /* Ensure it's above other content */
+}
+
+@media (max-width: 768px) {
+  .continue-button-container {
+    padding: 1rem;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .continue-button-container .button {
+    width: 100%;
+    max-width: 300px;
+    height: 3rem;
+    font-size: 1rem;
+    font-weight: 600;
+  }
 }
 
 /* Custom Minimap Styles */
