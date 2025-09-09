@@ -284,7 +284,7 @@ const ActivityFlowViewerInner = ({
         nodesConnectable={false}
         elementsSelectable={false}
         zoomOnScroll={true}
-        minZoom={0.5}
+        minZoom={0.35}
         maxZoom={2}
         proOptions={{ hideAttribution: true }}
       >
